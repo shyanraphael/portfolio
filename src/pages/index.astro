@@ -115,9 +115,8 @@ const paletteData = {
           </p>
           <p class="hero-note" data-hero-in>{profile.tagline}</p>
           <div class="hero-actions" data-hero-in>
-            <a class="btn" href="#work" data-magnetic data-roll data-nav>See the work</a>
             {profile.cv && (
-              <a class="btn ghost" href={profile.cv} download data-magnetic data-roll>Get my CV</a>
+              <a class="btn" href={profile.cv} download data-magnetic data-roll>Get my CV</a>
             )}
             <button class="btn ghost" id="hero-mail" type="button" data-magnetic data-email={profile.email}>
               <Icon name="copy" /><span id="hero-mail-text">Email me</span>
@@ -128,7 +127,6 @@ const paletteData = {
               <li><a href={profile.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" data-magnetic><Icon name="linkedin" /></a></li>
               <li><a href={profile.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" data-magnetic><Icon name="github" /></a></li>
             </ul>
-            <p class="hero-hint"><kbd>Ctrl K</kbd><span>jump anywhere</span></p>
           </div>
           <ul class="hero-stats" data-hero-in>
             <li><b><span data-hcount="30">30</span>+</b><small>pull requests shipped</small></li>

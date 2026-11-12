@@ -457,10 +457,10 @@ a:hover > .roll > span, button:hover > .roll > span, .roll:hover > span { transf
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .45s; }
 
 /* experience cards: a coloured bar draws across the top as each card arrives */
-.xp-card { --bar: 0; }
+.xp-card { --bar: 0; overflow: hidden; } /* clips the bar to the card's rounded corners (the shadow is outside, so it stays) */
 .xp-card::before {
   content: ''; position: absolute; left: 0; top: 0; height: 5px; width: 100%; background: var(--c);
-  transform: scaleX(var(--bar)); transform-origin: left; border-radius: 1.6rem 1.6rem 0 0;
+  transform: scaleX(var(--bar)); transform-origin: left;
 }
 
 /* depth: faint grain everywhere, soft glows in dark mode */
@@ -576,7 +576,6 @@ html.lite .orb { display: none; }
 }
 .hero-social a:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .hero-social svg { width: 1.15rem; height: 1.15rem; }
-.hero-hint { display: flex; align-items: center; gap: .55rem; margin: 0; font-size: .85rem; color: var(--muted); font-weight: 600; }
 
 .hero-stats { display: flex; flex-wrap: wrap; gap: 1.2rem 2.6rem; list-style: none; margin: 1.9rem 0 0; padding: 0; }
 .hero-stats li { display: grid; gap: .15rem; }
@@ -625,4 +624,3 @@ html.lite .orb { display: none; }
 
 /* small screens: the pile of chips needs the room, and the About section repeats the facts */
 @media (max-width: 640px) { .hero-stats { display: none; } }
-@media (pointer: coarse) { .hero-hint { display: none; } }
