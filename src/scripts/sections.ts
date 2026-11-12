@@ -23,58 +23,38 @@ function initSkills(reduced: boolean) {
   if (!grid) return;
   const items = $$('.skill', grid);
 
-  /* alive: pills drift on their own and lean toward the cursor; cards tilt in 3D under it */
+  /* ripple: hover a pill and a ring spreads out while nearby pills bounce in a wave, nearest first */
   if (!reduced && !lite) {
-    const fine = window.matchMedia('(pointer: fine)').matches;
-    const pills = items.map((el) => {
-      const pill = el.querySelector('.skill-name') as HTMLElement;
-      return {
-        el: pill, phase: Math.random() * 6.28, speed: 0.9 + Math.random() * 0.8,
-        sx: gsap.quickSetter(pill, 'x', 'px') as (v: number) => void,
-        sy: gsap.quickSetter(pill, 'y', 'px') as (v: number) => void,
-        x: 0, y: 0,
-      };
-    });
-    const pointer = { x: -9999, y: -9999 };
-    if (fine) {
-      grid.addEventListener('pointermove', (e) => { pointer.x = e.clientX; pointer.y = e.clientY; });
-      grid.addEventListener('pointerleave', () => { pointer.x = -9999; pointer.y = -9999; });
-    }
-    let visible = false;
-    ScrollTrigger.create({ trigger: grid, start: 'top bottom', end: 'bottom top', onToggle: (s) => { visible = s.isActive; } });
-    const radius = 150;
-    gsap.ticker.add((time) => {
-      if (!visible) return;
-      for (const p of pills) {
-        let tx = 0;
-        let ty = 0;
-        if (pointer.x > -9000) {
-          const r = p.el.getBoundingClientRect();
-          const dx = pointer.x - (r.left + r.width / 2 - p.x);
-          const dy = pointer.y - (r.top + r.height / 2 - p.y);
-          const d = Math.hypot(dx, dy);
-          if (d < radius) { const k = 1 - d / radius; tx = dx * 0.32 * k; ty = dy * 0.32 * k; }
-        }
-        p.x += (tx - p.x) * 0.14;
-        p.y += (ty - p.y) * 0.14;
-        p.sx(p.x);
-        p.sy(p.y + Math.sin(time * p.speed + p.phase) * 2.6);
-      }
-    });
+    const pillOf = (el: HTMLElement) => el.querySelector('.skill-name') as HTMLElement;
+    let lastRipple = 0;
+    const ripple = (origin: HTMLElement) => {
+      const now = performance.now();
+      if (now - lastRipple < 280) return; // don't stack ripples while the pointer sweeps across pills
+      lastRipple = now;
+      const gr = grid.getBoundingClientRect();
+      const or = origin.getBoundingClientRect();
+      const ox = or.left + or.width / 2;
+      const oy = or.top + or.height / 2;
 
-    if (fine) {
-      $$('.cat-card', grid).forEach((card) => {
-        gsap.set(card, { transformPerspective: 900 });
-        const rx = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power3' });
-        const ry = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power3' });
-        card.addEventListener('pointermove', (e) => {
-          const r = card.getBoundingClientRect();
-          ry(((e.clientX - r.left) / r.width - 0.5) * 8);
-          rx(-((e.clientY - r.top) / r.height - 0.5) * 8);
-        });
-        card.addEventListener('pointerleave', () => { rx(0); ry(0); });
-      });
-    }
+      /* the ring */
+      const ring = document.createElement('span');
+      ring.className = 'ripple-ring';
+      ring.style.left = `${ox - gr.left}px`;
+      ring.style.top = `${oy - gr.top}px`;
+      grid.appendChild(ring);
+      gsap.fromTo(ring, { scale: 0, opacity: 0.7 }, { scale: 1, opacity: 0, duration: 1.1, ease: 'power2.out', onComplete: () => ring.remove() });
+
+      /* the wave: farther pills start later and move less */
+      for (const el of items) {
+        if (el === origin) continue;
+        const r = el.getBoundingClientRect();
+        const d = Math.hypot(r.left + r.width / 2 - ox, r.top + r.height / 2 - oy);
+        if (d > 520) continue;
+        const amp = 9 * (1 - d / 520);
+        gsap.to(pillOf(el), { y: -amp, scale: 1 + amp * 0.012, duration: 0.22, delay: d / 900, ease: 'power2.out', yoyo: true, repeat: 1, overwrite: 'auto' });
+      }
+    };
+    items.forEach((el) => el.addEventListener('pointerenter', () => ripple(el)));
   }
 
   /* hover or focus a skill: related skills light up, and the hint names the projects */
