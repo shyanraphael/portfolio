@@ -456,11 +456,14 @@ a:hover > .roll > span, button:hover > .roll > span, .roll:hover > span { transf
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .45s; }
 
-/* experience cards: a coloured bar draws across the top as each card arrives */
-.xp-card { --bar: 0; overflow: hidden; } /* clips the bar to the card's rounded corners (the shadow is outside, so it stays) */
+/* experience cards: a coloured edge traces the top of the card as it arrives, curving down through both rounded corners.
+   It is a top border that follows the card's own radius (thick on top, tapering to nothing down the sides),
+   revealed left to right with a clip, so the left curve draws first and the right curve last. */
+.xp-card { --bar: 0; overflow: hidden; } /* the shadow is outside, so it stays */
 .xp-card::before {
-  content: ''; position: absolute; left: 0; top: 0; height: 5px; width: 100%; background: var(--c);
-  transform: scaleX(var(--bar)); transform-origin: left;
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  border-style: solid; border-color: var(--c) transparent transparent; border-width: 5px 0 0;
+  clip-path: inset(0 calc((1 - var(--bar)) * 100%) 0 0);
 }
 
 /* depth: faint grain everywhere, soft glows in dark mode */
