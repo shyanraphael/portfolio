@@ -154,8 +154,8 @@ const paletteData = {
                     <span class="cat-count">{String(group.length).padStart(2, '0')}</span>
                   </header>
                   <ul class="cat-skills">
-                    {group.map((s) => (
-                      <li class="skill" data-cat={s.cat} data-proj={s.pr.join(' ')} tabindex="0"><span class="skill-name">{s.name}</span></li>
+                    {group.map((s, gi) => (
+                      <li class="skill" data-cat={s.cat} data-proj={s.pr.join(' ')} style={`--k:${gi + ci * 3}`} tabindex="0"><span class="skill-name">{s.name}</span></li>
                     ))}
                   </ul>
                 </section>
