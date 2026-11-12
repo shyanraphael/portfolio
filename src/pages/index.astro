@@ -142,27 +142,41 @@ const paletteData = {
       <!-- SKILLS LAB -->
       <section id="skills" class="lab">
         <div class="wrap">
-          <h2 class="h2" data-split>What’s in the toolbox</h2>
-          <p class="lede mt-5" data-reveal>Grouped by what they’re for. Hover or tap any skill to see where I’ve used it.</p>
-          <div class="skill-grid" id="skill-grid">
-            {categories.filter((c) => c.id !== 'all').map((c, ci) => {
-              const group = skillTiles.filter((s) => s.cat === c.id);
-              return (
-                <section class="cat-card" data-cat={c.id} style={`--n:${ci}`}>
-                  <header class="cat-head">
-                    <h3>{c.label}</h3>
-                    <span class="cat-count">{String(group.length).padStart(2, '0')}</span>
-                  </header>
-                  <ul class="cat-skills">
-                    {group.map((s, gi) => (
-                      <li class="skill" data-cat={s.cat} data-proj={s.pr.join(' ')} style={`--k:${gi + ci * 3}`} tabindex="0"><span class="skill-name">{s.name}</span></li>
-                    ))}
-                  </ul>
-                </section>
-              );
-            })}
+          <h2 class="h2" data-split>Unlock the toolbox</h2>
+          <p class="lede mt-5" data-reveal>A skill tree that unlocks as you scroll. Hover or tap any node and the terminal tells you where I’ve used it.</p>
+          <div class="skills-layout">
+            <div class="tree" id="skill-grid">
+              {categories.filter((c) => c.id !== 'all').map((c, ci) => {
+                const group = skillTiles.filter((s) => s.cat === c.id);
+                return (
+                  <div class="branch" data-cat={c.id}>
+                    <div class="branch-head">
+                      <span class="b-idx">{String(ci + 1).padStart(2, '0')}</span>
+                      <h3>{c.label}</h3>
+                      <span class="b-n">{group.length} skills</span>
+                    </div>
+                    <ul class="branch-skills">
+                      {group.map((s) => (
+                        <li class="skill" data-cat={s.cat} data-proj={s.pr.join(' ')} tabindex="0"><span class="skill-name">{s.name}</span></li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+            <aside class="term" aria-label="Skill inspector">
+              <div class="term-bar">
+                <span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span>skills.sh</span>
+                <span class="term-live">live</span>
+              </div>
+              <div class="term-body" id="term-body" aria-live="polite">
+                <p class="tl dim">$ skills --list</p>
+                <p class="tl">{skills.length} skills · {categories.length - 1} branches</p>
+                <p class="tl ok">Hover or tap a node to inspect it.</p>
+              </div>
+            </aside>
           </div>
-          <p class="skill-hint" id="skill-hint" aria-live="polite">Hover or tap any skill to see which of my projects use it.</p>
         </div>
       </section>
 

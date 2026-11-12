@@ -5,7 +5,6 @@ import { Flip } from 'gsap/Flip';
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 import type { Core } from './core';
-import { lite } from './env';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, Flip, DrawSVGPlugin, MotionPathPlugin);
 
@@ -17,109 +16,128 @@ const finePointer = window.matchMedia('(pointer: fine)').matches;
    Interactions that work with or without scroll animation
    ============================================================ */
 
-/** Skills: grouped into category cards; hovering a skill shows which projects use it. */
+/* ---- terminal helpers shared by the skill tree ---- */
+const TERM_MAX = 14;
+const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] as string));
+
+/** Append a line to the terminal, dropping the oldest once it is full. */
+function termAdd(html: string, cls = ''): HTMLElement | null {
+  const body = $('#term-body');
+  if (!body) return null;
+  const p = document.createElement('p');
+  p.className = `tl ${cls}`.trim();
+  p.innerHTML = html;
+  body.appendChild(p);
+  while (body.children.length > TERM_MAX) body.firstElementChild?.remove();
+  return p;
+}
+
+/** Skills: hover, focus or tap a node and the terminal inspects it (branch, projects, related skills). */
 function initSkills(reduced: boolean) {
-  const grid = $('#skill-grid');
-  if (!grid) return;
-  const items = $$('.skill', grid);
+  const tree = $('#skill-grid');
+  if (!tree) return;
+  const items = $$('.skill', tree);
 
-  /* water: hover a bubble and a wave travels through the other bubbles, rocking each one as it passes, then calming */
-  if (!reduced && !lite) {
-    const bubbles = items.map((el) => {
-      const pill = el.querySelector('.skill-name') as HTMLElement;
-      return {
-        pill, cx: 0, cy: 0,
-        setX: gsap.quickSetter(pill, 'x', 'px') as (v: number) => void,
-        setY: gsap.quickSetter(pill, 'y', 'px') as (v: number) => void,
-      };
-    });
-    type Wave = { ox: number; oy: number; t0: number };
-    let waves: Wave[] = [];
-    let running = false;
-    let lastWave = 0;
-    const SPEED = 620; // px per second the wave travels
-    const REACH = 760; // px before it has faded out completely
-    const AMP = 10; // px a bubble rocks at most
-    const LIFE = 2.4; // seconds a wave lives
-
-    const step = () => {
-      const now = performance.now() / 1000;
-      waves = waves.filter((w) => now - w.t0 < LIFE);
-      for (const b of bubbles) {
-        let dx = 0;
-        let dy = 0;
-        for (const w of waves) {
-          const vx = b.cx - w.ox;
-          const vy = b.cy - w.oy;
-          const d = Math.hypot(vx, vy);
-          if (d < 1 || d > REACH) continue;
-          const tau = now - w.t0 - d / SPEED; // time since the wave front reached this bubble
-          if (tau < 0) continue;
-          const env = Math.exp(-tau * 2.6) * (1 - d / REACH);
-          const disp = Math.sin(tau * 17) * env * AMP; // in and out along the line from the source, like a surface wave
-          dx += (vx / d) * disp;
-          dy += (vy / d) * disp;
-        }
-        b.setX(dx);
-        b.setY(dy);
-      }
-      if (!waves.length) { gsap.ticker.remove(step); running = false; }
-    };
-
-    const splash = (origin: HTMLElement) => {
-      const now = performance.now();
-      if (now - lastWave < 260) return;
-      lastWave = now;
-      /* resting centre of every bubble (the pills sit at their rest position when no wave is passing) */
-      for (const b of bubbles) {
-        const r = b.pill.getBoundingClientRect();
-        const tx = (gsap.getProperty(b.pill, 'x') as number) || 0;
-        const ty = (gsap.getProperty(b.pill, 'y') as number) || 0;
-        b.cx = r.left + r.width / 2 - tx;
-        b.cy = r.top + r.height / 2 - ty;
-      }
-      const o = origin.querySelector('.skill-name')!.getBoundingClientRect();
-      waves.push({ ox: o.left + o.width / 2, oy: o.top + o.height / 2, t0: now / 1000 });
-      if (!running) { running = true; gsap.ticker.add(step); }
-    };
-    items.forEach((el) => el.addEventListener('pointerenter', () => splash(el)));
-  }
-
-  /* hover or focus a skill: related skills light up, and the hint names the projects */
-  const hint = $('#skill-hint');
-  const idleText = hint?.textContent ?? '';
   const titles = new Map<string, string>();
   try {
     for (const p of JSON.parse(document.getElementById('project-data')?.textContent || '[]')) titles.set(p.id, p.title);
-  } catch { /* no project data: hint just stays generic */ }
+  } catch { /* no project data: the terminal just shows ids */ }
   const ids = (el: HTMLElement) => (el.dataset.proj ?? '').split(' ').filter(Boolean);
+  const nameOf = (el: HTMLElement) => el.querySelector('.skill-name')?.textContent ?? '';
 
-  function clearFocus() {
-    grid!.classList.remove('has-focus');
-    items.forEach((i) => i.classList.remove('rel', 'self'));
-    if (hint) hint.textContent = idleText;
-  }
+  let token = 0; // a newer inspection cancels the older one's remaining output
+  let current: HTMLElement | null = null;
 
-  function focusSkill(el: HTMLElement) {
+  function mark(el: HTMLElement | null) {
+    items.forEach((i) => i.classList.remove('self', 'rel'));
+    tree!.classList.toggle('has-focus', !!el);
+    if (!el) return;
+    el.classList.add('self');
     const mine = ids(el);
-    grid!.classList.add('has-focus');
-    const related = items.filter((i) => i !== el && i.style.display !== 'none' && ids(i).some((p) => mine.includes(p)));
-    items.forEach((i) => { i.classList.toggle('self', i === el); i.classList.toggle('rel', related.includes(i)); });
-    if (hint) {
-      const nm = el.querySelector('.skill-name')?.textContent ?? '';
-      hint.innerHTML = mine.length
-        ? `<b>${nm}</b> is used in: ${mine.map((id) => titles.get(id) ?? id).join(', ')}.`
-        : `<b>${nm}</b> isn’t tied to one of the projects below, but it’s part of how I work.`;
-    }
+    items.forEach((i) => { if (i !== el && ids(i).some((p) => mine.includes(p))) i.classList.add('rel'); });
   }
 
+  function inspect(el: HTMLElement) {
+    if (el === current) { mark(el); return; }
+    current = el;
+    mark(el);
+    const my = ++token;
+    const name = nameOf(el);
+    const mine = ids(el);
+    const related = items.filter((i) => i !== el && ids(i).some((p) => mine.includes(p))).map(nameOf);
+    const branch = el.closest('.branch')?.querySelector('h3')?.textContent ?? '';
+    const rows: [string, string][] = [
+      ['branch', branch],
+      ['used in', mine.length ? mine.map((id) => titles.get(id) ?? id).join(', ') : 'no single listed project'],
+      ['related', related.length ? related.slice(0, 6).join(', ') + (related.length > 6 ? ` +${related.length - 6}` : '') : '—'],
+    ];
+
+    const cmd = `$ inspect "${name}"`;
+    const line = termAdd('', 'cmd');
+    const out = () => {
+      rows.forEach((r, i) => gsap.delayedCall(i * 0.12, () => {
+        if (my === token) termAdd(`<span class="k">${r[0]}</span><span class="v">${esc(r[1])}</span>`);
+      }));
+      gsap.delayedCall(rows.length * 0.12 + 0.05, () => { if (my === token) termAdd('✓ done', 'ok'); });
+    };
+    if (reduced || !line) { if (line) line.textContent = cmd; out(); return; }
+    const o = { i: 0 };
+    gsap.to(o, {
+      i: cmd.length, duration: Math.min(0.55, cmd.length * 0.022), ease: 'none',
+      onUpdate: () => { line.textContent = cmd.slice(0, Math.round(o.i)); },
+      onComplete: out,
+    });
+  }
+
+  let hoverTimer: number | undefined;
   items.forEach((el) => {
-    el.addEventListener('pointerenter', () => focusSkill(el));
-    el.addEventListener('focus', () => focusSkill(el));
-    el.addEventListener('click', () => focusSkill(el));
-    el.addEventListener('blur', clearFocus);
+    /* a short dwell, so sweeping the cursor across the tree doesn't flood the terminal */
+    el.addEventListener('pointerenter', () => { clearTimeout(hoverTimer); hoverTimer = window.setTimeout(() => inspect(el), 130); });
+    el.addEventListener('pointerleave', () => clearTimeout(hoverTimer));
+    el.addEventListener('focus', () => inspect(el));
+    el.addEventListener('click', () => inspect(el));
   });
-  grid.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') clearFocus(); });
+  tree.addEventListener('pointerleave', (e) => {
+    if (e.pointerType === 'touch') return;
+    clearTimeout(hoverTimer);
+    current = null;
+    mark(null);
+  });
+}
+
+/** The tree starts locked and unlocks branch by branch as it scrolls into view, logging each one to the terminal. */
+function initSkillTree() {
+  const tree = $('#skill-grid');
+  if (!tree) return;
+  gsap.fromTo(tree, { '--spine': 0 }, {
+    '--spine': 1, ease: 'none',
+    scrollTrigger: { trigger: tree, start: 'top 80%', end: 'bottom 70%', scrub: true },
+  });
+
+  $$('.branch', tree).forEach((branch) => {
+    const nodes = $$('.skill', branch);
+    const head = $('.branch-head', branch)!;
+    const label = $('h3', branch)?.textContent ?? '';
+    gsap.set(branch, { '--e': 0 });
+    gsap.set(head, { opacity: 0, x: -14 });
+    nodes.forEach((n) => n.classList.add('locked'));
+    gsap.set(nodes, { opacity: 0.55, scale: 0.92 });
+
+    ScrollTrigger.create({
+      trigger: branch, start: 'top 82%', once: true,
+      onEnter: () => {
+        const tl = gsap.timeline();
+        tl.to(branch, { '--e': 1, duration: 0.4, ease: 'power2.out' })
+          .to(head, { opacity: 1, x: 0, duration: 0.45, ease: 'power3.out' }, 0.1);
+        nodes.forEach((n, i) => {
+          const at = 0.5 + i * 0.09;
+          tl.add(() => { n.classList.remove('locked'); n.classList.add('on'); }, at);
+          tl.to(n, { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2)' }, at);
+        });
+        tl.add(() => { termAdd(`[ok] ${esc(label)}: ${nodes.length} unlocked`, 'ok'); }, 0.5 + nodes.length * 0.09);
+      },
+    });
+  });
 }
 
 /** Test runner: a sample suite that runs, catches a flaky test, retries and reports. */
@@ -404,15 +422,8 @@ function initScroll() {
     gsap.fromTo(w, { xPercent: 6 }, { xPercent: -34, ease: 'none', scrollTrigger: { trigger: w.parentElement!, start: 'top bottom', end: 'bottom top', scrub: true } });
   });
 
-  /* skills lab: chips pop in the first time it appears */
-  gsap.from('.cat-card', {
-    y: 60, opacity: 0, rotate: 2, duration: 0.9, ease: 'power3.out', stagger: 0.12,
-    scrollTrigger: { trigger: '#skill-grid', start: 'top 85%', once: true },
-  });
-  gsap.from('.skill', {
-    y: 14, opacity: 0, scale: 0.85, duration: 0.5, ease: 'back.out(1.6)', stagger: 0.02, delay: 0.25,
-    scrollTrigger: { trigger: '#skill-grid', start: 'top 85%', once: true },
-  });
+  /* skills: the tree unlocks branch by branch as it scrolls into view */
+  initSkillTree();
 
   /* experience: each card scales back as the next one stacks on top */
   const cards = $$('.xp-card');
