@@ -246,10 +246,6 @@ a:hover > .roll > span, button:hover > .roll > span, .roll:hover > span { transf
 .skill:hover .skill-name, .skill.self .skill-name { background: var(--ink); color: var(--bg); }
 .skill.rel .skill-name { border-color: var(--spark); box-shadow: 0 0 0 3px color-mix(in srgb, var(--spark) 22%, transparent); }
 .skill-grid { position: relative; }
-.ripple-ring {
-  position: absolute; z-index: 3; pointer-events: none; width: 760px; height: 760px; margin: -380px 0 0 -380px; border-radius: 50%;
-  border: 2px solid var(--spark); box-shadow: 0 0 40px color-mix(in srgb, var(--spark) 35%, transparent);
-}
 .skill-grid.has-focus .skill:not(.self):not(.rel) { filter: opacity(.4); } /* a filter, not opacity: GSAP owns opacity */
 .skill-hint { margin-top: 1.6rem; min-height: 1.6em; font-size: 1rem; font-weight: 600; color: var(--muted); }
 .skill-hint b { color: var(--ink); }

@@ -23,38 +23,66 @@ function initSkills(reduced: boolean) {
   if (!grid) return;
   const items = $$('.skill', grid);
 
-  /* ripple: hover a pill and a ring spreads out while nearby pills bounce in a wave, nearest first */
+  /* water: hover a bubble and a wave travels through the other bubbles, rocking each one as it passes, then calming */
   if (!reduced && !lite) {
-    const pillOf = (el: HTMLElement) => el.querySelector('.skill-name') as HTMLElement;
-    let lastRipple = 0;
-    const ripple = (origin: HTMLElement) => {
-      const now = performance.now();
-      if (now - lastRipple < 280) return; // don't stack ripples while the pointer sweeps across pills
-      lastRipple = now;
-      const gr = grid.getBoundingClientRect();
-      const or = origin.getBoundingClientRect();
-      const ox = or.left + or.width / 2;
-      const oy = or.top + or.height / 2;
+    const bubbles = items.map((el) => {
+      const pill = el.querySelector('.skill-name') as HTMLElement;
+      return {
+        pill, cx: 0, cy: 0,
+        setX: gsap.quickSetter(pill, 'x', 'px') as (v: number) => void,
+        setY: gsap.quickSetter(pill, 'y', 'px') as (v: number) => void,
+      };
+    });
+    type Wave = { ox: number; oy: number; t0: number };
+    let waves: Wave[] = [];
+    let running = false;
+    let lastWave = 0;
+    const SPEED = 620; // px per second the wave travels
+    const REACH = 760; // px before it has faded out completely
+    const AMP = 10; // px a bubble rocks at most
+    const LIFE = 2.4; // seconds a wave lives
 
-      /* the ring */
-      const ring = document.createElement('span');
-      ring.className = 'ripple-ring';
-      ring.style.left = `${ox - gr.left}px`;
-      ring.style.top = `${oy - gr.top}px`;
-      grid.appendChild(ring);
-      gsap.fromTo(ring, { scale: 0, opacity: 0.7 }, { scale: 1, opacity: 0, duration: 1.1, ease: 'power2.out', onComplete: () => ring.remove() });
-
-      /* the wave: farther pills start later and move less */
-      for (const el of items) {
-        if (el === origin) continue;
-        const r = el.getBoundingClientRect();
-        const d = Math.hypot(r.left + r.width / 2 - ox, r.top + r.height / 2 - oy);
-        if (d > 520) continue;
-        const amp = 9 * (1 - d / 520);
-        gsap.to(pillOf(el), { y: -amp, scale: 1 + amp * 0.012, duration: 0.22, delay: d / 900, ease: 'power2.out', yoyo: true, repeat: 1, overwrite: 'auto' });
+    const step = () => {
+      const now = performance.now() / 1000;
+      waves = waves.filter((w) => now - w.t0 < LIFE);
+      for (const b of bubbles) {
+        let dx = 0;
+        let dy = 0;
+        for (const w of waves) {
+          const vx = b.cx - w.ox;
+          const vy = b.cy - w.oy;
+          const d = Math.hypot(vx, vy);
+          if (d < 1 || d > REACH) continue;
+          const tau = now - w.t0 - d / SPEED; // time since the wave front reached this bubble
+          if (tau < 0) continue;
+          const env = Math.exp(-tau * 2.6) * (1 - d / REACH);
+          const disp = Math.sin(tau * 17) * env * AMP; // in and out along the line from the source, like a surface wave
+          dx += (vx / d) * disp;
+          dy += (vy / d) * disp;
+        }
+        b.setX(dx);
+        b.setY(dy);
       }
+      if (!waves.length) { gsap.ticker.remove(step); running = false; }
     };
-    items.forEach((el) => el.addEventListener('pointerenter', () => ripple(el)));
+
+    const splash = (origin: HTMLElement) => {
+      const now = performance.now();
+      if (now - lastWave < 260) return;
+      lastWave = now;
+      /* resting centre of every bubble (the pills sit at their rest position when no wave is passing) */
+      for (const b of bubbles) {
+        const r = b.pill.getBoundingClientRect();
+        const tx = (gsap.getProperty(b.pill, 'x') as number) || 0;
+        const ty = (gsap.getProperty(b.pill, 'y') as number) || 0;
+        b.cx = r.left + r.width / 2 - tx;
+        b.cy = r.top + r.height / 2 - ty;
+      }
+      const o = origin.querySelector('.skill-name')!.getBoundingClientRect();
+      waves.push({ ox: o.left + o.width / 2, oy: o.top + o.height / 2, t0: now / 1000 });
+      if (!running) { running = true; gsap.ticker.add(step); }
+    };
+    items.forEach((el) => el.addEventListener('pointerenter', () => splash(el)));
   }
 
   /* hover or focus a skill: related skills light up, and the hint names the projects */
