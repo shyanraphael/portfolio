@@ -238,12 +238,14 @@ a:hover > .roll > span, button:hover > .roll > span, .roll:hover > span { transf
 .cat-head h3 { font-family: var(--font-display); font-weight: 800; letter-spacing: -.03em; font-size: 1.6rem; line-height: 1; }
 .cat-count { font-family: var(--font-mono); font-size: .8rem; font-weight: 600; color: var(--c); }
 .cat-skills { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
-.skill {
-  padding: .5rem .95rem; border-radius: 99px; font-weight: 700; font-size: .92rem; background: var(--bg-2); border: 1.5px solid transparent; cursor: default;
+.skill { list-style: none; } /* the shell: GSAP animates its entrance; the pill inside carries the look and the float */
+.skill-name {
+  display: block; padding: .5rem .95rem; border-radius: 99px; font-weight: 700; font-size: .92rem; background: var(--bg-2); border: 1.5px solid transparent; cursor: default;
   transition: background .25s, color .25s, border-color .25s, box-shadow .25s; /* never opacity/transform: GSAP animates those */
 }
-.skill:hover, .skill.self { background: var(--ink); color: var(--bg); }
-.skill.rel { border-color: var(--spark); box-shadow: 0 0 0 3px color-mix(in srgb, var(--spark) 22%, transparent); }
+.skill:hover .skill-name, .skill.self .skill-name { background: var(--ink); color: var(--bg); }
+.skill.rel .skill-name { border-color: var(--spark); box-shadow: 0 0 0 3px color-mix(in srgb, var(--spark) 22%, transparent); }
+.cat-card { transform-style: preserve-3d; will-change: transform; }
 .skill-grid.has-focus .skill:not(.self):not(.rel) { filter: opacity(.4); } /* a filter, not opacity: GSAP owns opacity */
 .skill-hint { margin-top: 1.6rem; min-height: 1.6em; font-size: 1rem; font-weight: 600; color: var(--muted); }
 .skill-hint b { color: var(--ink); }

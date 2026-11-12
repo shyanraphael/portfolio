@@ -5,6 +5,7 @@ import { Flip } from 'gsap/Flip';
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 import type { Core } from './core';
+import { lite } from './env';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, Flip, DrawSVGPlugin, MotionPathPlugin);
 
@@ -17,10 +18,64 @@ const finePointer = window.matchMedia('(pointer: fine)').matches;
    ============================================================ */
 
 /** Skills: grouped into category cards; hovering a skill shows which projects use it. */
-function initSkills(_reduced: boolean) {
+function initSkills(reduced: boolean) {
   const grid = $('#skill-grid');
   if (!grid) return;
   const items = $$('.skill', grid);
+
+  /* alive: pills drift on their own and lean toward the cursor; cards tilt in 3D under it */
+  if (!reduced && !lite) {
+    const fine = window.matchMedia('(pointer: fine)').matches;
+    const pills = items.map((el) => {
+      const pill = el.querySelector('.skill-name') as HTMLElement;
+      return {
+        el: pill, phase: Math.random() * 6.28, speed: 0.9 + Math.random() * 0.8,
+        sx: gsap.quickSetter(pill, 'x', 'px') as (v: number) => void,
+        sy: gsap.quickSetter(pill, 'y', 'px') as (v: number) => void,
+        x: 0, y: 0,
+      };
+    });
+    const pointer = { x: -9999, y: -9999 };
+    if (fine) {
+      grid.addEventListener('pointermove', (e) => { pointer.x = e.clientX; pointer.y = e.clientY; });
+      grid.addEventListener('pointerleave', () => { pointer.x = -9999; pointer.y = -9999; });
+    }
+    let visible = false;
+    ScrollTrigger.create({ trigger: grid, start: 'top bottom', end: 'bottom top', onToggle: (s) => { visible = s.isActive; } });
+    const radius = 150;
+    gsap.ticker.add((time) => {
+      if (!visible) return;
+      for (const p of pills) {
+        let tx = 0;
+        let ty = 0;
+        if (pointer.x > -9000) {
+          const r = p.el.getBoundingClientRect();
+          const dx = pointer.x - (r.left + r.width / 2 - p.x);
+          const dy = pointer.y - (r.top + r.height / 2 - p.y);
+          const d = Math.hypot(dx, dy);
+          if (d < radius) { const k = 1 - d / radius; tx = dx * 0.32 * k; ty = dy * 0.32 * k; }
+        }
+        p.x += (tx - p.x) * 0.14;
+        p.y += (ty - p.y) * 0.14;
+        p.sx(p.x);
+        p.sy(p.y + Math.sin(time * p.speed + p.phase) * 2.6);
+      }
+    });
+
+    if (fine) {
+      $$('.cat-card', grid).forEach((card) => {
+        gsap.set(card, { transformPerspective: 900 });
+        const rx = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power3' });
+        const ry = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power3' });
+        card.addEventListener('pointermove', (e) => {
+          const r = card.getBoundingClientRect();
+          ry(((e.clientX - r.left) / r.width - 0.5) * 8);
+          rx(-((e.clientY - r.top) / r.height - 0.5) * 8);
+        });
+        card.addEventListener('pointerleave', () => { rx(0); ry(0); });
+      });
+    }
+  }
 
   /* hover or focus a skill: related skills light up, and the hint names the projects */
   const hint = $('#skill-hint');
