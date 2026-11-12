@@ -1,6 +1,8 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import './env';
 import { initTheme } from './theme';
+import { initExtras } from './extras';
 import { initCore } from './core';
 import { initHero } from './hero';
 import { initSections } from './sections';
@@ -32,10 +34,12 @@ if (reduced) {
   gsap.globalTimeline.timeScale(20); // interactive bits still work, but effectively instantly
   initHero(true);
   initSections(null, true);
+  initExtras(null, true);
 } else {
   const core = initCore();
   const hero = initHero(false); // creates the hero pin first so later triggers measure correctly
   initSections(core, false);
+  initExtras(core, false);
   core.start(() => hero.play());
   document.fonts.ready.then(() => ScrollTrigger.refresh());
   window.addEventListener('load', () => ScrollTrigger.refresh());

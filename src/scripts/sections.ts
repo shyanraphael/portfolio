@@ -36,8 +36,60 @@ function initSkills(reduced: boolean) {
 
   tabs.forEach((t) => t.addEventListener('click', () => {
     tabs.forEach((x) => x.setAttribute('aria-selected', String(x === t)));
+    clearFocus();
     show(t.dataset.filter!);
   }));
+
+  /* hover or focus a skill: related skills light up, lines connect them, and the hint names the projects */
+  const hint = $('#skill-hint');
+  const svg = document.getElementById('skill-links') as unknown as SVGSVGElement | null;
+  const idleText = hint?.textContent ?? '';
+  const titles = new Map<string, string>();
+  try {
+    for (const p of JSON.parse(document.getElementById('project-data')?.textContent || '[]')) titles.set(p.id, p.title);
+  } catch { /* no project data: hint just stays generic */ }
+  const ids = (el: HTMLElement) => (el.dataset.proj ?? '').split(' ').filter(Boolean);
+
+  function clearFocus() {
+    grid!.classList.remove('has-focus');
+    items.forEach((i) => i.classList.remove('rel', 'self'));
+    if (svg) svg.innerHTML = '';
+    if (hint) hint.textContent = idleText;
+  }
+
+  function focusSkill(el: HTMLElement) {
+    const mine = ids(el);
+    grid!.classList.add('has-focus');
+    const related = items.filter((i) => i !== el && i.style.display !== 'none' && ids(i).some((p) => mine.includes(p)));
+    items.forEach((i) => { i.classList.toggle('self', i === el); i.classList.toggle('rel', related.includes(i)); });
+    if (hint) {
+      hint.textContent = mine.length
+        ? `Used in: ${mine.map((id) => titles.get(id) ?? id).join(' · ')}`
+        : 'Not tied to one of the projects below, but part of how I work.';
+    }
+    if (!svg || reduced) return;
+    svg.innerHTML = '';
+    svg.setAttribute('width', String(grid!.clientWidth));
+    svg.setAttribute('height', String(grid!.clientHeight));
+    const c = (n: HTMLElement) => ({ x: n.offsetLeft + n.offsetWidth / 2, y: n.offsetTop + n.offsetHeight / 2 });
+    const a = c(el);
+    const lines = related.map((r) => {
+      const b = c(r);
+      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', String(a.x)); l.setAttribute('y1', String(a.y));
+      l.setAttribute('x2', String(b.x)); l.setAttribute('y2', String(b.y));
+      svg.appendChild(l);
+      return l;
+    });
+    gsap.fromTo(lines, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.45, ease: 'power2.out', stagger: 0.02 });
+  }
+
+  items.forEach((el) => {
+    el.addEventListener('pointerenter', () => focusSkill(el));
+    el.addEventListener('focus', () => focusSkill(el));
+    el.addEventListener('blur', clearFocus);
+  });
+  grid.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') clearFocus(); });
 }
 
 /** Test runner: a sample suite that runs, catches a flaky test, retries and reports. */
@@ -158,7 +210,12 @@ function initSheet(core: Core | null) {
     $('#sheet-detail')!.textContent = p.detail;
     $('#sheet-stack')!.innerHTML = p.stack.map((s) => `<li class="chip">${s}</li>`).join('');
     $('#sheet-links')!.innerHTML = p.links
-      .map((l) => `<a class="btn" href="${l.href}" target="_blank" rel="noopener noreferrer">${l.label}</a>`).join('');
+      .map((l) => `<a class="btn" href="${l.href}" target="_blank" rel="noopener noreferrer">${l.label}</a>`).join('')
+      + `<a class="btn ghost" href="/projects/${p.id}/" data-full="${p.id}">Full case study</a>`;
+    $('#sheet-links [data-full]')!.addEventListener('click', () => {
+      /* name the sheet's artwork so the browser morphs it into the next page's artwork */
+      $('#sheet-art')!.style.viewTransitionName = `art-${p.id}`;
+    });
     sheet!.classList.add('open');
     core?.lenis.stop();
 
@@ -325,6 +382,9 @@ function initScroll() {
 
   /* experience: each card scales back as the next one stacks on top */
   const cards = $$('.xp-card');
+  cards.forEach((card) => {
+    gsap.to(card, { '--bar': 1, ease: 'none', scrollTrigger: { trigger: card, start: 'top 85%', end: 'top 35%', scrub: true } });
+  });
   cards.forEach((card, i) => {
     const next = cards[i + 1];
     if (!next) return;

@@ -1,0 +1,78 @@
+---
+import '../../styles/global.css';
+import Icon from '../../components/Icon.astro';
+import { profile, projects } from '../../data';
+
+export function getStaticPaths() {
+  return projects.map((p, i) => ({
+    params: { id: p.id },
+    props: { project: p, next: projects[(i + 1) % projects.length] },
+  }));
+}
+
+const { project, next } = Astro.props;
+const title = `${project.title} | ${profile.name}`;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <meta name="description" content={project.blurb} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={project.blurb} />
+    <meta name="color-scheme" content="light dark" />
+    <script is:inline>
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem('theme'); } catch (e) {}
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="pj">
+      <div class="wrap">
+        <div class="pj-top">
+          <a class="pj-back" href="/#work">← All projects</a>
+          <button class="theme-btn" id="theme" type="button" aria-label="Switch between light and dark theme">
+            <Icon name="sun" />
+            <Icon name="moon" />
+          </button>
+        </div>
+
+        <div class="pj-art" style={`view-transition-name: art-${project.id}`} set:html={project.cover} />
+
+        <div class="pj-body">
+          <p class="pcard-kind">{project.kind}</p>
+          <h1 class="pj-title">{project.title}</h1>
+          <p class="lede">{project.detail}</p>
+          <ul class="chips">{project.stack.map((s) => <li class="chip">{s}</li>)}</ul>
+          {project.links.length > 0 && (
+            <div class="pj-links">
+              {project.links.map((l) => <a class="btn" href={l.href} target="_blank" rel="noopener noreferrer">{l.label}</a>)}
+            </div>
+          )}
+        </div>
+
+        <a class="pj-next" href={`/projects/${next.id}/`}>
+          <small>Next project</small>
+          <strong>{next.title}</strong>
+        </a>
+      </div>
+    </main>
+
+    <script>
+      import '../../scripts/project-page.ts';
+    </script>
+  </body>
+</html>

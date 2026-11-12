@@ -4,6 +4,7 @@ import { SplitText } from 'gsap/SplitText';
 import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import Matter from 'matter-js';
 import { cursorApi } from './core';
+import { lite } from './env';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin);
 
@@ -100,6 +101,28 @@ function initPhysics(hero: HTMLElement) {
   return () => {};
 }
 
+/** The letters of the name lean away from the pointer as it passes close by. */
+function initCharReact(hero: HTMLElement, chars: Element[]) {
+  const setters = chars.map((c) => ({
+    y: gsap.quickTo(c, 'skewX', { duration: 0.5, ease: 'power3' }),
+    r: gsap.quickTo(c, 'rotate', { duration: 0.5, ease: 'power3' }),
+  }));
+  const radius = 190;
+  hero.addEventListener('mousemove', (e) => {
+    chars.forEach((c, i) => {
+      const b = c.getBoundingClientRect();
+      const dx = e.clientX - (b.left + b.width / 2);
+      const dy = e.clientY - (b.top + b.height / 2);
+      const d = Math.hypot(dx, dy);
+      const k = d < radius ? 1 - d / radius : 0;
+      setters[i].y(-k * 16 * Math.sign(dx || 1)); // skew away from the pointer (the name sits in a mask, so no vertical travel)
+      setters[i].r(-k * 7 * Math.sign(dx || 1));
+      void dy;
+    });
+  });
+  hero.addEventListener('mouseleave', () => setters.forEach((s) => { s.y(0); s.r(0); }));
+}
+
 export function initHero(reduced: boolean) {
   const hero = document.getElementById('top') as HTMLElement;
   const name = hero.querySelector('.hero-name') as HTMLElement;
@@ -140,7 +163,11 @@ export function initHero(reduced: boolean) {
     .to(chars, { yPercent: 0, rotate: 0, duration: 1.25, stagger: 0.045 })
     .to('[data-hero-in]', { opacity: 1, y: 0, duration: 0.9, stagger: 0.12 }, '-=0.8')
     .from('.nav-inner', { y: -40, opacity: 0, duration: 0.8 }, '-=1')
-    .add(() => { initPhysics(hero); gsap.delayedCall(2.2, nextRole); }, '-=0.5');
+    .add(() => {
+      if (!lite) initPhysics(hero);
+      gsap.delayedCall(2.2, nextRole);
+      if (!lite && window.matchMedia('(pointer: fine)').matches) initCharReact(hero, chars);
+    }, '-=0.5');
   gsap.set('[data-hero-in]', { y: 24 });
 
   /* hero stays pinned while the next section slides over it */

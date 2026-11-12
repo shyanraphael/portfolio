@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import Icon from '../components/Icon.astro';
 import {
-  profile, roles, categories, skills, heroChips, marquee, tests, experience, projects, article, community, certifications,
+  profile, roles, categories, skills, heroChips, marquee, tests, experience, projects, article, community, certifications, skillProjects,
 } from '../data';
 
 const sections = [
@@ -16,6 +16,19 @@ const sections = [
   { id: 'contact', label: 'Contact' },
 ];
 const catLabel = Object.fromEntries(categories.map((c) => [c.id, c.label]));
+/* bento sizes come from real data: the more projects use a skill, the bigger its tile */
+const skillTiles = skills.map((s) => {
+  const pr = skillProjects(s.name);
+  return { ...s, pr, size: pr.length >= 3 ? 'lg' : pr.length === 2 ? 'md' : 'sm' };
+});
+const paletteData = {
+  sections,
+  projects: projects.map((p) => ({ id: p.id, title: p.title })),
+  email: profile.email,
+  cv: profile.cv,
+  linkedin: profile.linkedin,
+  github: profile.github,
+};
 ---
 
 <html lang="en">
@@ -75,6 +88,7 @@ const catLabel = Object.fromEntries(categories.map((c) => [c.id, c.label]));
           <a href="#work" data-roll data-nav>Projects</a>
           <a href="#contact" data-roll data-nav>Contact</a>
         </div>
+        <button class="pal-open" id="pal-open" type="button" aria-label="Open the command palette"><span>Search</span><kbd>Ctrl K</kbd></button>
         <button class="theme-btn" id="theme" type="button" aria-label="Switch between light and dark theme">
           <Icon name="sun" />
           <Icon name="moon" />
@@ -136,10 +150,16 @@ const catLabel = Object.fromEntries(categories.map((c) => [c.id, c.label]));
             ))}
           </div>
           <div class="skill-grid" id="skill-grid">
-            {skills.map((s) => (
-              <div class="skill" data-cat={s.cat}>{s.name}<small>{catLabel[s.cat]}</small></div>
+            {skillTiles.map((s) => (
+              <div class="skill" data-cat={s.cat} data-size={s.size} data-proj={s.pr.join(' ')} tabindex="0">
+                <span class="skill-name">{s.name}</span>
+                <small>{catLabel[s.cat]}</small>
+                {s.pr.length > 0 && <em class="skill-n">{s.pr.length} project{s.pr.length > 1 ? 's' : ''}</em>}
+              </div>
             ))}
+            <svg class="skill-links" id="skill-links" aria-hidden="true"></svg>
           </div>
+          <p class="skill-hint" id="skill-hint" aria-live="polite">Hover or tap a skill to see where I’ve used it.</p>
         </div>
       </section>
 
@@ -275,7 +295,9 @@ const catLabel = Object.fromEntries(categories.map((c) => [c.id, c.label]));
           </div>
           <div class="foot">
             <span>© {new Date().getFullYear()} {profile.name}</span>
+            <span class="clock" aria-label="Local time in Sri Lanka"><i></i>Colombo <b id="clock">--:--</b></span>
             <span>Built with Astro, GSAP and Matter.js</span>
+            <a href="#top" class="to-top" data-nav>Back to top ↑</a>
           </div>
         </div>
       </section>
@@ -295,9 +317,27 @@ const catLabel = Object.fromEntries(categories.map((c) => [c.id, c.label]));
       </div>
     </div>
 
+    <!-- command palette -->
+    <div class="pal" id="palette" role="dialog" aria-modal="true" aria-label="Command palette" hidden>
+      <div class="pal-scrim" id="pal-scrim"></div>
+      <div class="pal-box">
+        <input id="pal-input" type="text" placeholder="Jump to a section, open a project, run an action…" autocomplete="off" spellcheck="false" aria-label="Search commands" />
+        <ul id="pal-list" role="listbox"></ul>
+        <p class="pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>Enter</kbd> run</span><span><kbd>Esc</kbd> close</span></p>
+      </div>
+    </div>
+
+    <!-- QA mode -->
+    <div class="qa-badge" id="qa-badge" hidden>
+      <b>QA MODE</b><span>bugs squashed: <i id="qa-count">0</i></span><button type="button" id="qa-exit">Exit (Q)</button>
+    </div>
+    <div class="qa-tip" id="qa-tip" hidden></div>
+    <div class="qa-toast" id="qa-toast" hidden></div>
+
     <script>
       import '../scripts/main.ts';
     </script>
+    <script is:inline id="palette-data" type="application/json" set:html={JSON.stringify(paletteData)}></script>
     <script is:inline id="project-data" type="application/json" set:html={JSON.stringify(projects)}></script>
   </body>
 </html>

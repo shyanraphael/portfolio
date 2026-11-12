@@ -2,6 +2,8 @@ import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+import { lite } from './env';
+
 gsap.registerPlugin(ScrollTrigger);
 
 const finePointer = window.matchMedia('(pointer: fine)').matches;
@@ -81,7 +83,7 @@ export function initCore() {
 
   function tileTransition(origin: { x: number; y: number }, label: string, jump: () => void, done: () => void) {
     if (!wipe) { jump(); done(); return; }
-    const cols = innerWidth < 640 ? 6 : 12;
+    const cols = innerWidth < 640 || lite ? 6 : 12;
     const size = innerWidth / cols;
     const rows = Math.ceil(innerHeight / size);
     wipe.textContent = '';
@@ -144,20 +146,28 @@ export function initCore() {
         lenis.scrollTo(target, { duration: 1.6 });
         return;
       }
-      if (wiping) return;
-      wiping = true;
-      lenis.stop();
       const r = a.getBoundingClientRect();
-      const origin = { x: e.clientX || r.left + r.width / 2, y: e.clientY || r.top + r.height / 2 };
-      const label = a.querySelector('.roll span')?.textContent?.trim() || id.slice(1).replace('top', 'home');
-      tileTransition(
-        origin,
-        label,
-        () => { lenis.scrollTo(target, { immediate: true, force: true }); ScrollTrigger.update(); },
-        () => { wiping = false; lenis.start(); },
+      goTo(
+        id,
+        { x: e.clientX || r.left + r.width / 2, y: e.clientY || r.top + r.height / 2 },
+        a.querySelector('.roll span')?.textContent?.trim() || undefined,
       );
     });
   });
+
+  /** Jump to a section with the tile transition (also used by the command palette). */
+  function goTo(id: string, origin?: { x: number; y: number }, label?: string) {
+    const target = document.querySelector<HTMLElement>(id);
+    if (!target || wiping) return;
+    wiping = true;
+    lenis.stop();
+    tileTransition(
+      origin ?? { x: innerWidth / 2, y: innerHeight / 2 },
+      label ?? id.slice(1).replace('top', 'home'),
+      () => { lenis.scrollTo(target, { immediate: true, force: true }); ScrollTrigger.update(); },
+      () => { wiping = false; lenis.start(); },
+    );
+  }
 
   /* scroll spy */
   document.querySelectorAll<HTMLElement>('[data-spy]').forEach((dot) => {
@@ -178,12 +188,30 @@ export function initCore() {
   const loader = document.getElementById('loader');
   const num = loader?.querySelector<HTMLElement>('.loader-num');
   let started = false;
-  const finish = () => { if (loader) loader.style.display = 'none'; lenis.start(); };
+  const finish = () => {
+    if (loader) loader.style.display = 'none';
+    lenis.start();
+    try { sessionStorage.setItem('seen', '1'); } catch { /* storage blocked: fine */ }
+    /* arriving from a project page with #work etc: land on that section */
+    const h = location.hash;
+    if (h.length > 1) {
+      const el = document.querySelector<HTMLElement>(h);
+      if (el) { ScrollTrigger.refresh(); lenis.scrollTo(el, { immediate: true, force: true }); }
+    }
+  };
 
   function run(onDone: () => void) {
     if (started) return;
     started = true;
-    if (!loader || !num) { finish(); onDone(); return; }
+    let seen = false;
+    try { seen = sessionStorage.getItem('seen') === '1'; } catch { /* storage blocked: fine */ }
+    /* returning visitors skip the counter: straight into the page */
+    if (!loader || !num || seen) {
+      if (loader) loader.style.display = 'none';
+      onDone();
+      finish();
+      return;
+    }
     const counter = { v: 0 };
     gsap.timeline({ onComplete: finish })
       .to('.loader-name', { y: 0, duration: 0.01 })
@@ -199,6 +227,7 @@ export function initCore() {
 
   return {
     lenis,
+    goTo,
     start(onDone: () => void) {
       Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 2000))]).then(() => run(onDone));
       setTimeout(() => run(onDone), 2600); // hard fallback

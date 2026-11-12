@@ -223,6 +223,15 @@ export const projects: {
   },
 ];
 
+/* which projects use a skill: whole-word match, so "Java" never matches "JavaScript" */
+const tokens = (s: string) => s.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+const covers = (a: string[], b: string[]) => {
+  const [small, big] = a.length <= b.length ? [a, b] : [b, a];
+  return small.length > 0 && small.every((t) => big.includes(t));
+};
+export const skillProjects = (skill: string) =>
+  projects.filter((p) => p.stack.some((s) => covers(tokens(s), tokens(skill)))).map((p) => p.id);
+
 export const article = {
   title: 'AI Can Make Mistakes Too: Why You Must Verify AI-Generated Code',
   where: 'Published on Verdentra’s website',
