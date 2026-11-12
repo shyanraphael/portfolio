@@ -16,29 +16,11 @@ const finePointer = window.matchMedia('(pointer: fine)').matches;
    Interactions that work with or without scroll animation
    ============================================================ */
 
-/** Skills lab: tabs rearrange the chips with Flip. */
-function initSkills(reduced: boolean) {
+/** Skills: grouped into category cards; hovering a skill shows which projects use it. */
+function initSkills(_reduced: boolean) {
   const grid = $('#skill-grid');
   if (!grid) return;
-  const items = [...grid.children] as HTMLElement[];
-  const tabs = $$('.tab');
-
-  const show = (id: string) => {
-    const state = reduced ? null : Flip.getState(items);
-    items.forEach((el) => { el.style.display = id === 'all' || el.dataset.cat === id ? '' : 'none'; });
-    if (!state) return;
-    Flip.from(state, {
-      duration: 0.8, ease: 'power3.inOut', absolute: true, scale: true, stagger: 0.012,
-      onEnter: (els) => gsap.fromTo(els, { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.55, ease: 'back.out(1.6)', stagger: 0.02 }),
-      onLeave: (els) => gsap.to(els, { opacity: 0, scale: 0.3, duration: 0.35 }),
-    });
-  };
-
-  tabs.forEach((t) => t.addEventListener('click', () => {
-    tabs.forEach((x) => x.setAttribute('aria-selected', String(x === t)));
-    clearFocus();
-    show(t.dataset.filter!);
-  }));
+  const items = $$('.skill', grid);
 
   /* hover or focus a skill: related skills light up, and the hint names the projects */
   const hint = $('#skill-hint');
@@ -360,8 +342,12 @@ function initScroll() {
   });
 
   /* skills lab: chips pop in the first time it appears */
+  gsap.from('.cat-card', {
+    y: 60, opacity: 0, rotate: 2, duration: 0.9, ease: 'power3.out', stagger: 0.12,
+    scrollTrigger: { trigger: '#skill-grid', start: 'top 85%', once: true },
+  });
   gsap.from('.skill', {
-    y: 30, opacity: 0, scale: 0.9, duration: 0.7, ease: 'back.out(1.5)', stagger: 0.025,
+    y: 14, opacity: 0, scale: 0.85, duration: 0.5, ease: 'back.out(1.6)', stagger: 0.02, delay: 0.25,
     scrollTrigger: { trigger: '#skill-grid', start: 'top 85%', once: true },
   });
 

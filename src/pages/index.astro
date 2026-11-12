@@ -142,20 +142,25 @@ const paletteData = {
       <!-- SKILLS LAB -->
       <section id="skills" class="lab">
         <div class="wrap">
-          <h2 class="h2" data-split>Skills you can poke</h2>
-          <p class="lede mt-5" data-reveal>Pick a lane and the toolbox rearranges itself.</p>
-          <div class="tabs" role="tablist" aria-label="Skill categories">
-            {categories.map((c, i) => (
-              <button class="tab" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-filter={c.id} type="button">{c.label}</button>
-            ))}
-          </div>
+          <h2 class="h2" data-split>What’s in the toolbox</h2>
+          <p class="lede mt-5" data-reveal>Grouped by what they’re for. Hover or tap any skill to see where I’ve used it.</p>
           <div class="skill-grid" id="skill-grid">
-            {skillTiles.map((s) => (
-              <div class="skill" data-cat={s.cat} data-proj={s.pr.join(' ')} tabindex="0">
-                <span class="skill-name">{s.name}</span>
-                <small>{catLabel[s.cat]}</small>
-              </div>
-            ))}
+            {categories.filter((c) => c.id !== 'all').map((c, ci) => {
+              const group = skillTiles.filter((s) => s.cat === c.id);
+              return (
+                <section class="cat-card" data-cat={c.id} style={`--n:${ci}`}>
+                  <header class="cat-head">
+                    <h3>{c.label}</h3>
+                    <span class="cat-count">{String(group.length).padStart(2, '0')}</span>
+                  </header>
+                  <ul class="cat-skills">
+                    {group.map((s) => (
+                      <li class="skill" data-cat={s.cat} data-proj={s.pr.join(' ')} tabindex="0"><span class="skill-name">{s.name}</span></li>
+                    ))}
+                  </ul>
+                </section>
+              );
+            })}
           </div>
           <p class="skill-hint" id="skill-hint" aria-live="polite">Hover or tap any skill to see which of my projects use it.</p>
         </div>
