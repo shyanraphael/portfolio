@@ -151,15 +151,13 @@ const paletteData = {
           </div>
           <div class="skill-grid" id="skill-grid">
             {skillTiles.map((s) => (
-              <div class="skill" data-cat={s.cat} data-size={s.size} data-proj={s.pr.join(' ')} tabindex="0">
+              <div class="skill" data-cat={s.cat} data-proj={s.pr.join(' ')} tabindex="0">
                 <span class="skill-name">{s.name}</span>
                 <small>{catLabel[s.cat]}</small>
-                {s.pr.length > 0 && <em class="skill-n">{s.pr.length} project{s.pr.length > 1 ? 's' : ''}</em>}
               </div>
             ))}
-            <svg class="skill-links" id="skill-links" aria-hidden="true"></svg>
           </div>
-          <p class="skill-hint" id="skill-hint" aria-live="polite">Hover or tap a skill to see where I’ve used it.</p>
+          <p class="skill-hint" id="skill-hint" aria-live="polite">Hover or tap any skill to see which of my projects use it.</p>
         </div>
       </section>
 

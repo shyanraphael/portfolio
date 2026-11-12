@@ -40,9 +40,8 @@ function initSkills(reduced: boolean) {
     show(t.dataset.filter!);
   }));
 
-  /* hover or focus a skill: related skills light up, lines connect them, and the hint names the projects */
+  /* hover or focus a skill: related skills light up, and the hint names the projects */
   const hint = $('#skill-hint');
-  const svg = document.getElementById('skill-links') as unknown as SVGSVGElement | null;
   const idleText = hint?.textContent ?? '';
   const titles = new Map<string, string>();
   try {
@@ -53,7 +52,6 @@ function initSkills(reduced: boolean) {
   function clearFocus() {
     grid!.classList.remove('has-focus');
     items.forEach((i) => i.classList.remove('rel', 'self'));
-    if (svg) svg.innerHTML = '';
     if (hint) hint.textContent = idleText;
   }
 
@@ -63,30 +61,17 @@ function initSkills(reduced: boolean) {
     const related = items.filter((i) => i !== el && i.style.display !== 'none' && ids(i).some((p) => mine.includes(p)));
     items.forEach((i) => { i.classList.toggle('self', i === el); i.classList.toggle('rel', related.includes(i)); });
     if (hint) {
-      hint.textContent = mine.length
-        ? `Used in: ${mine.map((id) => titles.get(id) ?? id).join(' · ')}`
-        : 'Not tied to one of the projects below, but part of how I work.';
+      const nm = el.querySelector('.skill-name')?.textContent ?? '';
+      hint.innerHTML = mine.length
+        ? `<b>${nm}</b> is used in: ${mine.map((id) => titles.get(id) ?? id).join(', ')}.`
+        : `<b>${nm}</b> isn’t tied to one of the projects below, but it’s part of how I work.`;
     }
-    if (!svg || reduced) return;
-    svg.innerHTML = '';
-    svg.setAttribute('width', String(grid!.clientWidth));
-    svg.setAttribute('height', String(grid!.clientHeight));
-    const c = (n: HTMLElement) => ({ x: n.offsetLeft + n.offsetWidth / 2, y: n.offsetTop + n.offsetHeight / 2 });
-    const a = c(el);
-    const lines = related.map((r) => {
-      const b = c(r);
-      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      l.setAttribute('x1', String(a.x)); l.setAttribute('y1', String(a.y));
-      l.setAttribute('x2', String(b.x)); l.setAttribute('y2', String(b.y));
-      svg.appendChild(l);
-      return l;
-    });
-    gsap.fromTo(lines, { drawSVG: '0%' }, { drawSVG: '100%', duration: 0.45, ease: 'power2.out', stagger: 0.02 });
   }
 
   items.forEach((el) => {
     el.addEventListener('pointerenter', () => focusSkill(el));
     el.addEventListener('focus', () => focusSkill(el));
+    el.addEventListener('click', () => focusSkill(el));
     el.addEventListener('blur', clearFocus);
   });
   grid.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') clearFocus(); });
