@@ -238,18 +238,35 @@ function initPalette(core: Core | null, reduced: boolean, qa: ReturnType<typeof 
 
 /* ---------- footer clock ---------- */
 function initClock() {
-  const el = document.getElementById('clock');
-  if (!el) return;
+  const els = ['clock'].map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+  if (!els.length) return;
   const fmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Colombo' });
-  const tick = () => { el.textContent = fmt.format(new Date()); };
+  const tick = () => { const now = fmt.format(new Date()); els.forEach((el) => { el.textContent = now; }); };
   tick();
   setInterval(tick, 15000);
+}
+
+/* hero "Email me": copies the address and says so */
+function initHeroMail() {
+  const btn = document.getElementById('hero-mail');
+  const text = document.getElementById('hero-mail-text');
+  if (!btn || !text) return;
+  let busy = false;
+  btn.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(btn.dataset.email ?? ''); } catch { /* blocked: still show feedback */ }
+    if (busy) return;
+    busy = true;
+    text.textContent = 'Copied!';
+    toast('Email copied. Talk soon!');
+    setTimeout(() => { text.textContent = 'Email me'; busy = false; }, 1600);
+  });
 }
 
 export function initExtras(core: Core | null, reduced: boolean) {
   const qa = initQA(reduced);
   initPalette(core, reduced, qa);
   initClock();
+  initHeroMail();
 
   /* Q toggles QA mode; the Konami code does too */
   const code = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];

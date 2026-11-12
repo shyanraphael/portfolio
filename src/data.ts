@@ -9,7 +9,7 @@ export const profile = {
   linkedin: 'https://www.linkedin.com/in/shyan-wijesekera',
   github: 'https://github.com/shyanraphael',
   cv: '/Shyan_Wijesekera_CV.pdf' as string,
-  location: 'Sri Lanka',
+  location: 'Colombo',
 };
 
 export const roles = ['software engineer', 'QA automation engineer', 'full stack builder', 'bug hunter'];

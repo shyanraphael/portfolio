@@ -511,8 +511,8 @@ kbd {
 /* footer extras */
 .foot { align-items: center; }
 .clock { display: inline-flex; align-items: center; gap: .5rem; font-family: var(--font-mono); font-size: .85rem; }
-.clock i { width: .5rem; height: .5rem; border-radius: 50%; background: #3fdca6; box-shadow: 0 0 0 0 rgba(63, 220, 166, .6); animation: ping 2s infinite; }
-@keyframes ping { 70% { box-shadow: 0 0 0 .5rem rgba(63, 220, 166, 0); } 100% { box-shadow: 0 0 0 0 rgba(63, 220, 166, 0); } }
+.clock i { width: .5rem; height: .5rem; border-radius: 50%; background: #3fdca6; box-shadow: 0 0 0 0 rgba(63, 220, 166, .6); animation: beacon 2s infinite; }
+@keyframes beacon { 70% { box-shadow: 0 0 0 .5rem rgba(63, 220, 166, 0); } 100% { box-shadow: 0 0 0 0 rgba(63, 220, 166, 0); } }
 .to-top { font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
 
 /* QA mode */
@@ -557,3 +557,72 @@ html.qa .qa-hover { outline: 2px solid var(--spark) !important; background-color
 /* lite mode: no grain, no blur */
 html.lite body::before { display: none; }
 html.lite .nav-inner, html.lite .pal-scrim { backdrop-filter: none; }
+
+/* ============================================================
+   Hero additions: status, facts, socials, snippet, orb, scroll cue
+   ============================================================ */
+.orb { position: absolute; right: -2%; top: 5%; width: min(560px, 46vw); height: min(560px, 46vw); z-index: 0; pointer-events: none; }
+@media (max-width: 760px) { .orb { right: -22%; top: 2%; width: 86vw; height: 86vw; opacity: .5; } }
+html.lite .orb { display: none; }
+
+.hero-copy { padding-top: clamp(6.2rem, 13vh, 8.2rem); }
+
+.hero-actions .btn svg { width: 1.05rem; height: 1.05rem; }
+.hero-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .9rem 1.4rem; margin-top: 1.3rem; }
+.hero-social { display: flex; gap: .5rem; list-style: none; margin: 0; padding: 0; }
+.hero-social a {
+  width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; background: var(--surface);
+  transition: background .25s, color .25s, border-color .25s;
+}
+.hero-social a:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.hero-social svg { width: 1.15rem; height: 1.15rem; }
+.hero-hint { display: flex; align-items: center; gap: .55rem; margin: 0; font-size: .85rem; color: var(--muted); font-weight: 600; }
+
+.hero-stats { display: flex; flex-wrap: wrap; gap: 1.2rem 2.6rem; list-style: none; margin: 1.9rem 0 0; padding: 0; }
+.hero-stats li { display: grid; gap: .15rem; }
+.hero-stats b { font-family: var(--font-display); font-weight: 800; letter-spacing: -.035em; line-height: 1; font-size: clamp(1.9rem, 3.8vw, 2.7rem); color: var(--accent); font-variant-numeric: tabular-nums; }
+.hero-stats small { font-size: .82rem; color: var(--muted); font-weight: 600; }
+
+.hero-photo {
+  display: none; position: absolute; right: 2%; top: 1rem; width: 12rem; height: 12rem; object-fit: cover; z-index: 1;
+  border-radius: 58% 42% 55% 45% / 48% 56% 44% 52%; border: 3px solid var(--surface); box-shadow: var(--shadow), 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+@media (min-width: 980px) { .hero-photo { display: block; } }
+
+.snippet { display: none; }
+@media (min-width: 1180px) {
+  .snippet {
+    display: block; position: absolute; right: 0; bottom: .2rem; width: min(410px, 33vw); overflow: hidden; border-radius: 16px;
+    background: #0a0e1e; color: #cfd6ff; border: 1.5px solid #232a4d; box-shadow: var(--shadow); font-family: var(--font-mono); font-size: .72rem; pointer-events: none;
+  }
+}
+.snippet-bar { display: flex; align-items: center; gap: .8rem; padding: .6rem .9rem; border-bottom: 1px solid #232a4d; color: #8d95c4; font-size: .72rem; }
+.snippet-code { margin: 0; padding: .85rem 1rem 1.05rem; min-height: 9.6rem; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; font-family: inherit; }
+.snippet-code::after { content: '▍'; margin-left: 1px; color: #ff8d57; animation: blink 1s steps(1) infinite; }
+.snippet-code .k { color: #ff8d57; }
+.snippet-code .s { color: #7fe3c2; }
+.snippet-code .c { color: #6f78a8; }
+.snippet-code .ok { color: #3fdca6; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.scroll-cue {
+  position: absolute; left: 50%; bottom: 1rem; z-index: 3; translate: -50% 0; display: grid; justify-items: center; gap: .4rem;
+  font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+}
+.scroll-cue i { position: relative; width: 1.35rem; height: 2.1rem; border: 2px solid currentColor; border-radius: 99px; }
+.scroll-cue i::after { content: ''; position: absolute; left: 50%; top: .35rem; width: 3px; height: .45rem; margin-left: -1.5px; border-radius: 2px; background: var(--spark); animation: cue 1.8s ease-in-out infinite; }
+@keyframes cue { 0% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(.8rem); opacity: 0; } 100% { opacity: 0; } }
+@media (max-width: 640px) { .scroll-cue { display: none; } }
+
+/* tighter vertical rhythm so the facts clear the pile of chips at the bottom of the hero */
+.hero-copy { padding-top: clamp(6.8rem, 14.5vh, 8.8rem); }
+.hero-name { font-size: clamp(3.3rem, 11.5vw, 7.4rem); }
+.hero-role { margin-top: 1rem; }
+.hero-note { margin-top: 1rem; }
+.hero-actions { margin-top: 1.4rem; }
+.hero-meta { margin-top: 1rem; }
+.hero-stats { margin-top: 1.3rem; }
+
+/* small screens: the pile of chips needs the room, and the About section repeats the facts */
+@media (max-width: 640px) { .hero-stats { display: none; } }
+@media (pointer: coarse) { .hero-hint { display: none; } }

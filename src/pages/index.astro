@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import fs from 'node:fs';
+import path from 'node:path';
 import Icon from '../components/Icon.astro';
 import {
   profile, roles, categories, skills, heroChips, marquee, tests, experience, projects, article, community, certifications, skillProjects,
@@ -15,6 +17,8 @@ const sections = [
   { id: 'more', label: 'More' },
   { id: 'contact', label: 'Contact' },
 ];
+/* drop a photo named me.jpg / me.png / me.webp into /public and it appears in the hero */
+const photo = ['jpg', 'jpeg', 'png', 'webp'].map((x) => `me.${x}`).find((f) => fs.existsSync(path.join(process.cwd(), 'public', f)));
 const catLabel = Object.fromEntries(categories.map((c) => [c.id, c.label]));
 /* bento sizes come from real data: the more projects use a skill, the bigger its tile */
 const skillTiles = skills.map((s) => {
@@ -100,6 +104,7 @@ const paletteData = {
       <!-- HERO -->
       <section class="hero" id="top">
         <div class="dots" aria-hidden="true"></div>
+        <canvas class="orb" id="orb" aria-hidden="true"></canvas>
         <div class="wrap hero-copy">
           <h1 class="hero-name" aria-label={profile.name}>
             <span class="mask"><span class="l1">{profile.first}</span></span>
@@ -114,11 +119,35 @@ const paletteData = {
             {profile.cv && (
               <a class="btn ghost" href={profile.cv} download data-magnetic data-roll>Get my CV</a>
             )}
+            <button class="btn ghost" id="hero-mail" type="button" data-magnetic data-email={profile.email}>
+              <Icon name="copy" /><span id="hero-mail-text">Email me</span>
+            </button>
           </div>
+          <div class="hero-meta" data-hero-in>
+            <ul class="hero-social">
+              <li><a href={profile.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" data-magnetic><Icon name="linkedin" /></a></li>
+              <li><a href={profile.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" data-magnetic><Icon name="github" /></a></li>
+            </ul>
+            <p class="hero-hint"><kbd>Ctrl K</kbd><span>jump anywhere</span></p>
+          </div>
+          <ul class="hero-stats" data-hero-in>
+            <li><b><span data-hcount="30">30</span>+</b><small>pull requests shipped</small></li>
+            <li><b><span data-hcount="30">30</span>+</b><small>QA tickets owned</small></li>
+            <li><b><span data-hcount="5">5</span></b><small>projects in parallel</small></li>
+          </ul>
+          {photo && <img class="hero-photo" src={`/${photo}`} alt={profile.name} width="240" height="240" data-hero-in />}
+          <aside class="snippet" data-hero-in aria-hidden="true">
+            <div class="snippet-bar">
+              <span class="term-dots"><i></i><i></i><i></i></span>
+              <span id="snip-file">sample.spec.ts</span>
+            </div>
+            <pre class="snippet-code" id="snip-code"></pre>
+          </aside>
         </div>
         <div class="field" aria-hidden="true">
           {heroChips.map((c) => <span class="pchip" data-cat={c.cat}>{c.name}</span>)}
         </div>
+        <a class="scroll-cue" href="#about" data-nav aria-label="Scroll to the next section"><i></i><span>Scroll</span></a>
         <p class="drag-hint" aria-hidden="true">Go on, throw the skills around</p>
       </section>
 
