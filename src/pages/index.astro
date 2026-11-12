@@ -1,0 +1,303 @@
+---
+import '../styles/global.css';
+import Icon from '../components/Icon.astro';
+import {
+  profile, roles, categories, skills, heroChips, marquee, tests, experience, projects, article, community, certifications,
+} from '../data';
+
+const sections = [
+  { id: 'top', label: 'Home' },
+  { id: 'about', label: 'About' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'tests', label: 'Testing' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'work', label: 'Projects' },
+  { id: 'more', label: 'More' },
+  { id: 'contact', label: 'Contact' },
+];
+const catLabel = Object.fromEntries(categories.map((c) => [c.id, c.label]));
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Shyan Wijesekera | Software Engineer</title>
+    <meta
+      name="description"
+      content="Shyan Wijesekera is a software engineer working across development and QA: .NET, React, Next.js, Playwright and Selenium."
+    />
+    <meta property="og:title" content="Shyan Wijesekera | Software Engineer" />
+    <meta property="og:description" content={profile.tagline} />
+    <meta name="color-scheme" content="light dark" />
+    <script is:inline>
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem('theme'); } catch (e) {}
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          document.documentElement.classList.add('js-motion');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="loader" aria-hidden="true">
+      <div class="loader-inner">
+        <p class="loader-name">{profile.name}</p>
+        <div class="loader-bar"><i></i></div>
+        <div class="loader-meta"><span>Loading the toolbox</span><span class="loader-num">000</span></div>
+      </div>
+    </div>
+    <div id="wipe" aria-hidden="true"></div>
+    <div id="progress"></div>
+    <div id="cursor"><span></span></div>
+
+    <nav class="spy" aria-label="Sections">
+      {sections.map((s) => <a href={`#${s.id}`} data-spy={s.id} aria-label={s.label}><span>{s.label}</span></a>)}
+    </nav>
+
+    <header class="nav">
+      <div class="nav-inner">
+        <a href="#top" class="logo" data-nav aria-label="Home">Shyan W.</a>
+        <div class="nav-links">
+          <a href="#about" data-roll data-nav>About</a>
+          <a href="#skills" data-roll data-nav>Skills</a>
+          <a href="#tests" data-roll data-nav>Testing</a>
+          <a href="#work" data-roll data-nav>Projects</a>
+          <a href="#contact" data-roll data-nav>Contact</a>
+        </div>
+        <button class="theme-btn" id="theme" type="button" aria-label="Switch between light and dark theme">
+          <Icon name="sun" />
+          <Icon name="moon" />
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <section class="hero" id="top">
+        <div class="dots" aria-hidden="true"></div>
+        <div class="wrap hero-copy">
+          <h1 class="hero-name" aria-label={profile.name}>
+            <span class="mask"><span class="l1">{profile.first}</span></span>
+            <span class="mask"><span class="l2">{profile.last}</span></span>
+          </h1>
+          <p class="hero-role" data-hero-in>
+            <span>I’m a</span><span class="swap" id="swap" data-roles={JSON.stringify(roles)}>{roles[0]}</span>
+          </p>
+          <p class="hero-note" data-hero-in>{profile.tagline}</p>
+          <div class="hero-actions" data-hero-in>
+            <a class="btn" href="#work" data-magnetic data-roll data-nav>See the work</a>
+            {profile.cv && (
+              <a class="btn ghost" href={profile.cv} download data-magnetic data-roll>Get my CV</a>
+            )}
+          </div>
+        </div>
+        <div class="field" aria-hidden="true">
+          {heroChips.map((c) => <span class="pchip" data-cat={c.cat}>{c.name}</span>)}
+        </div>
+        <p class="drag-hint" aria-hidden="true">Go on, throw the skills around</p>
+      </section>
+
+      <div class="cover">
+        <div class="marquee" aria-hidden="true">
+          <div class="marquee-track" data-dir="1" data-copies="3">
+            {[...marquee, ...marquee, ...marquee].map((m) => <span class="marquee-item">{m}</span>)}
+          </div>
+        </div>
+
+        <!-- ABOUT -->
+        <section id="about" class="about">
+          <div class="bgword" aria-hidden="true">about</div>
+          <div class="wrap">
+            <p class="statement" data-words>At Verdentra I’ve shipped <span class="n" data-count="30">0</span>+ pull requests, raised <span class="n" data-count="30">0</span>+ QA tickets and kept <span class="n" data-count="5">0</span> projects moving at once, without missing a deadline.</p>
+            <p class="lede mt-10" data-reveal>{profile.intro}</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- SKILLS LAB -->
+      <section id="skills" class="lab">
+        <div class="wrap">
+          <h2 class="h2" data-split>Skills you can poke</h2>
+          <p class="lede mt-5" data-reveal>Pick a lane and the toolbox rearranges itself.</p>
+          <div class="tabs" role="tablist" aria-label="Skill categories">
+            {categories.map((c, i) => (
+              <button class="tab" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-filter={c.id} type="button">{c.label}</button>
+            ))}
+          </div>
+          <div class="skill-grid" id="skill-grid">
+            {skills.map((s) => (
+              <div class="skill" data-cat={s.cat}>{s.name}<small>{catLabel[s.cat]}</small></div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <!-- TEST RUNNER -->
+      <section id="tests" class="tests">
+        <div class="wrap tests-grid">
+          <div>
+            <h2 class="h2" data-split>I test what I ship.</h2>
+            <p class="lede mt-5" data-reveal>
+              Developer and QA in one person. This is a sample suite, written for this page, going through the loop I use at
+              work: run it, catch the flaky one, retry, report.
+            </p>
+            <div class="mt-8" data-reveal>
+              <button class="btn" id="run" type="button" data-magnetic>
+                <Icon name="play" /><span id="run-label">Run the suite</span>
+              </button>
+            </div>
+          </div>
+          <div class="runner" data-reveal>
+            <div class="runner-bar">
+              <div class="dots3" aria-hidden="true"><i></i><i></i><i></i></div>
+              <span>sample.spec.ts</span>
+              <span id="run-clock">0.0s</span>
+            </div>
+            <div class="runner-prog"><i id="run-prog"></i></div>
+            <ul class="runner-list" id="runner-list">
+              {tests.map((t) => (
+                <li class="t-row" data-state="idle" data-ms={t.ms} data-flaky={t.flaky ? '1' : '0'}>
+                  <span class="t-ico">
+                    <svg class="idle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+                    <svg class="spin" viewBox="0 0 24 24"><path d="M12 4a8 8 0 0 1 8 8"/></svg>
+                    <svg class="ok" viewBox="0 0 24 24"><path class="dr" d="M5 12.5l4.5 4.5L19 7"/></svg>
+                    <svg class="no" viewBox="0 0 24 24"><path class="dr" d="M6 6l12 12M18 6L6 18"/></svg>
+                  </span>
+                  <span class="t-name">{t.name}</span>
+                  <span class="t-time">—</span>
+                  <span class="t-note">Timeout 5000ms exceeded. Retrying once.</span>
+                </li>
+              ))}
+            </ul>
+            <div class="runner-foot">
+              <span id="run-summary">Ready. 6 tests queued.</span>
+              <span id="run-count" aria-live="polite"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXPERIENCE -->
+      <section id="experience" class="xp">
+        <div class="wrap">
+          <h2 class="h2" data-split>Where I’ve worked and studied</h2>
+          <div class="xp-stack">
+            {experience.map((e, i) => (
+              <article class="xp-card" style={`--i:${i}`}>
+                <div>
+                  <p class="xp-when">{e.period}</p>
+                  <h3 class="xp-role">{e.role}</h3>
+                  <p class="xp-org">{e.org} · {e.sub}</p>
+                </div>
+                <ul>{e.points.map((p) => <li>{p}</li>)}</ul>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <!-- PROJECTS -->
+      <section id="work" class="work">
+        <div class="wrap work-head">
+          <h2 class="h2" data-split>Things I’ve built and broken</h2>
+          <p class="lede mt-5">Open any project for the details.</p>
+        </div>
+        <div class="rail">
+          {projects.map((p) => (
+            <article class="pcard" role="button" tabindex="0" data-project={p.id} data-cursor="Open" aria-label={`Open ${p.title}`}>
+              <div class="pcard-art" set:html={p.cover} />
+              <div class="pcard-body">
+                <p class="pcard-kind">{p.kind}</p>
+                <h3>{p.title}</h3>
+                <p>{p.blurb}</p>
+                <ul class="chips">{p.stack.slice(0, 4).map((s) => <li class="chip">{s}</li>)}</ul>
+                <span class="pcard-open">Details <Icon name="arrow-ur" /></span>
+              </div>
+            </article>
+          ))}
+        </div>
+        <div class="work-bar" aria-hidden="true"><i></i></div>
+      </section>
+
+      <div class="marquee alt" aria-hidden="true">
+        <div class="marquee-track" data-dir="-1" data-copies="5">
+          {Array.from({ length: 5 }, () => ['Build', 'Test', 'Ship', 'Repeat']).flat().map((m) => <span class="marquee-item">{m}</span>)}
+        </div>
+      </div>
+
+      <!-- MORE -->
+      <section id="more" class="more">
+        <div class="wrap more-grid">
+          <div>
+            <h2 class="h2" data-split>Something I wrote</h2>
+            <a class="article-card mt-10" href={article.href} target="_blank" rel="noopener noreferrer" data-reveal data-cursor="Read">
+              <h3>{article.title}</h3>
+              <p>{article.where}</p>
+              <span class="arrow"><Icon name="arrow-ur" /></span>
+            </a>
+          </div>
+          <div data-reveal>
+            <h2 class="h2" data-split>Beyond the code</h2>
+            <ul class="list-rows">
+              {community.map((c) => <li>{c.org}<span>{c.role}</span></li>)}
+            </ul>
+            <ul class="certs chips">
+              {certifications.map((c) => <li class="chip">{c}</li>)}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="contact" class="contact">
+        <div class="bgword" aria-hidden="true">hello</div>
+        <div class="wrap">
+          <h2 class="h2" data-split>Let’s build something together.</h2>
+          <button class="mail-btn" id="mail" type="button" data-magnetic data-cursor="Copy" data-email={profile.email}>
+            <span id="mail-text">{profile.email}</span>
+            <span class="copy"><Icon name="copy" class="i-copy" /></span>
+          </button>
+          <div class="contact-links">
+            <a class="btn" href={profile.linkedin} target="_blank" rel="noopener noreferrer" data-magnetic data-roll>LinkedIn</a>
+            <a class="btn ghost" href={profile.github} target="_blank" rel="noopener noreferrer" data-magnetic data-roll>GitHub</a>
+            {profile.cv && <a class="btn ghost" href={profile.cv} download data-magnetic data-roll>Download CV</a>}
+          </div>
+          <div class="foot">
+            <span>© {new Date().getFullYear()} {profile.name}</span>
+            <span>Built with Astro, GSAP and Matter.js</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- project sheet -->
+    <div class="sheet-scrim" id="scrim"></div>
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Project details">
+      <button class="sheet-close" id="sheet-close" type="button" aria-label="Close project"><Icon name="close" /></button>
+      <div class="sheet-art" id="sheet-art"></div>
+      <div class="sheet-body">
+        <p class="pcard-kind" id="sheet-kind"></p>
+        <h3 id="sheet-title"></h3>
+        <p class="lede" id="sheet-detail"></p>
+        <ul class="chips" id="sheet-stack"></ul>
+        <div class="sheet-links" id="sheet-links"></div>
+      </div>
+    </div>
+
+    <script>
+      import '../scripts/main.ts';
+    </script>
+    <script is:inline id="project-data" type="application/json" set:html={JSON.stringify(projects)}></script>
+  </body>
+</html>
