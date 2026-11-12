@@ -231,7 +231,7 @@ a:hover > .roll > span, button:hover > .roll > span, .roll:hover > span { transf
 .skill {
   position: relative; padding: .85rem 1.05rem; border-radius: 16px; font-weight: 700; background: var(--surface); border: 1.5px solid var(--line);
   box-shadow: var(--shadow); cursor: default; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden;
-  transition: background .25s, color .25s, border-color .25s, opacity .3s, transform .3s;
+  transition: background .25s, color .25s, border-color .25s, box-shadow .25s; /* never opacity/transform: GSAP animates those */
 }
 .skill[data-size='md'] { grid-column: span 2; }
 .skill[data-size='lg'] { grid-column: span 2; grid-row: span 2; }
