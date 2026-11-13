@@ -148,14 +148,14 @@ export const projects: {
 }[] = [
   {
     id: 'bus',
-    title: 'Bus Location Tracker',
+    title: 'SriMaps',
     kind: 'Progressive web app and Android',
     blurb: 'Find any bus in Sri Lanka by number or route, in Sinhala, Tamil and English.',
     detail:
       'Designed end to end with use case, activity, sequence, class and rich picture diagrams, then built as a progressive web app and an Android app. The interface works in three languages so riders can search in the one they actually use.',
     stack: ['React', 'TypeScript', 'Tailwind', 'Kotlin'],
     links: [
-      { label: 'Live site', href: 'https://srimaps-frontend.vercel.app' },
+      { label: 'Live site', href: 'https://www.srimaps.lk/' },
       { label: 'Android app', href: 'https://github.com/shyanraphael/srimaps-app' },
     ],
     cover:
