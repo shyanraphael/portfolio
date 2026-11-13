@@ -247,11 +247,6 @@ export const article = {
   ],
 };
 
-/* kind words from people I've worked with. Add a role or company to `role` when you have it. */
-export const recommendations: { name: string; text: string; role?: string }[] = [
-  { name: 'Saajidh', text: 'said I’m the best he’s worked with.' },
-];
-
 export const community = [
   { org: 'AIESEC IIT', role: 'Internal Campaigns Team Leader' },
   { org: 'Toastmasters IIT', role: 'Member' },

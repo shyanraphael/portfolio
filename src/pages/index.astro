@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Icon from '../components/Icon.astro';
 import {
-  profile, roles, categories, skills, heroChips, marquee, tests, experience, projects, article, recommendations, community, certifications, skillProjects,
+  profile, roles, categories, skills, heroChips, marquee, tests, experience, projects, article, community, certifications, skillProjects,
 } from '../data';
 
 const sections = [
@@ -273,24 +273,6 @@ const paletteData = {
               </article>
             ))}
           </div>
-        </div>
-      </section>
-
-      <!-- RECOMMENDATION -->
-      <section id="voice" class="voice">
-        <div class="wrap">
-          <p class="voice-label" data-reveal>Recommendation</p>
-          {recommendations.map((r) => (
-            <figure class="voice-card">
-              <blockquote>
-                <p class="statement voice-quote" data-words><span class="n">{r.name}</span> {r.text}</p>
-              </blockquote>
-              <figcaption data-reveal>
-                <span class="voice-avatar" aria-hidden="true">{r.name[0]}</span>
-                <span class="voice-who">{r.name}{r.role && <small>{r.role}</small>}</span>
-              </figcaption>
-            </figure>
-          ))}
         </div>
       </section>
 

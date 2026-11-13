@@ -484,6 +484,61 @@ function initScroll() {
   });
 }
 
+/** Fail-safe. Entrance animations are driven by scroll positions that the page measures once; if anything (a late font, an
+ *  extension, a layout shift, a script error) leaves a measurement wrong, content could stay hidden. This watches what is
+ *  actually on screen using the browser's own visibility detection, and if something has sat in view for a moment while
+ *  still hidden, and nothing is animating it, it reveals it. In normal use it never has to act. */
+function initSafetyNet(tests: { autorun(): void }) {
+  const identity = (el: Element) => {
+    const t = getComputedStyle(el).transform;
+    return t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)';
+  };
+  const leaves = (el: Element) => [...el.querySelectorAll<HTMLElement>('div,span')].filter((c) => c.children.length === 0);
+
+  const rescue = (el: HTMLElement) => {
+    if (el.matches('[data-split]')) {
+      const hidden = leaves(el).filter((c) => !identity(c));
+      if (hidden.length && !hidden.some((c) => gsap.isTweening(c))) {
+        gsap.to(hidden, { yPercent: 0, rotate: 0, duration: 0.8, ease: 'power4.out', stagger: 0.015, overwrite: 'auto' });
+      }
+      return;
+    }
+    if (el.matches('.branch')) {
+      const locked = $$('.skill.locked', el);
+      if (locked.length && !locked.some((n) => gsap.isTweening(n))) {
+        gsap.to(el, { '--e': 1, duration: 0.3 });
+        gsap.to($('.branch-head', el), { opacity: 1, x: 0, duration: 0.4, overwrite: 'auto' });
+        locked.forEach((n, i) => {
+          gsap.delayedCall(i * 0.06, () => n.classList.replace('locked', 'on'));
+          gsap.to(n, { opacity: 1, scale: 1, duration: 0.4, delay: i * 0.06, ease: 'back.out(2)', overwrite: 'auto' });
+        });
+      }
+      return;
+    }
+    if (el.matches('.runner')) tests.autorun();
+    if (+getComputedStyle(el).opacity < 0.5 && !gsap.isTweening(el)) {
+      gsap.to(el, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', overwrite: 'auto' });
+    }
+  };
+
+  const seen = new WeakSet<Element>();
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting || seen.has(e.target)) continue;
+      const el = e.target as HTMLElement;
+      /* give the normal scroll-triggered animation its time first */
+      window.setTimeout(() => {
+        const r = el.getBoundingClientRect();
+        const stillInView = r.bottom > 0 && r.top < window.innerHeight;
+        if (!stillInView) return;
+        rescue(el);
+        seen.add(el);
+      }, 1600);
+    }
+  }, { threshold: 0.12 });
+  $$('[data-reveal], [data-split], .branch, .runner').forEach((el) => io.observe(el));
+}
+
 export function initSections(core: Core | null, reduced: boolean) {
   if (core) (window as unknown as { __lenis?: unknown }).__lenis = core.lenis;
   initSkills(reduced);
@@ -496,7 +551,12 @@ export function initSections(core: Core | null, reduced: boolean) {
     return;
   }
 
-  initScroll();
+  try {
+    initScroll();
+  } catch (err) {
+    console.error('[portfolio] scroll animations failed to start:', err);
+  }
   /* run the sample suite once, the first time it scrolls into view */
   ScrollTrigger.create({ trigger: '.runner', start: 'top 70%', once: true, onEnter: () => tests.autorun() });
+  initSafetyNet(tests);
 }

@@ -658,13 +658,3 @@ html.lite .orb { display: none; }
   background: var(--accent-ink); color: var(--accent); font-family: var(--font-mono); font-size: .75rem; font-weight: 700;
 }
 
-/* recommendation */
-.voice { padding: clamp(4rem, 9vw, 7rem) 0; }
-.voice-label { margin: 0 0 1.6rem; font-family: var(--font-mono); font-size: .8rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
-.voice-card { margin: 0; }
-.voice-card blockquote { margin: 0; }
-.voice-quote { max-width: 20ch; font-size: clamp(2.2rem, 6.2vw, 5.2rem); }
-.voice-card figcaption { display: flex; align-items: center; gap: .9rem; margin-top: 2rem; }
-.voice-avatar { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; }
-.voice-who { display: grid; font-weight: 700; }
-.voice-who small { font-weight: 500; color: var(--muted); font-size: .85rem; }
