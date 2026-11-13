@@ -585,11 +585,6 @@ html.lite .orb { display: none; }
 .hero-stats b { font-family: var(--font-display); font-weight: 800; letter-spacing: -.035em; line-height: 1; font-size: clamp(1.9rem, 3.8vw, 2.7rem); color: var(--accent); font-variant-numeric: tabular-nums; }
 .hero-stats small { font-size: .82rem; color: var(--muted); font-weight: 600; }
 
-.hero-photo {
-  display: none; position: absolute; right: 2%; top: 1rem; width: 12rem; height: 12rem; object-fit: cover; z-index: 1;
-  border-radius: 58% 42% 55% 45% / 48% 56% 44% 52%; border: 3px solid var(--surface); box-shadow: var(--shadow), 0 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent);
-}
-@media (min-width: 980px) { .hero-photo { display: block; } }
 
 .snippet { display: none; }
 @media (min-width: 1180px) {
@@ -627,3 +622,49 @@ html.lite .orb { display: none; }
 
 /* small screens: the pile of chips needs the room, and the About section repeats the facts */
 @media (max-width: 640px) { .hero-stats { display: none; } }
+
+/* hero portrait: the cut-out stands in front of a coloured disc, head poking out above it */
+.hero-portrait { display: none; position: absolute; right: 3%; bottom: 0; z-index: 1; width: min(470px, 35vw); aspect-ratio: 3 / 4; pointer-events: none; }
+@media (min-width: 980px) { .hero-portrait { display: block; } }
+.portrait-disc {
+  position: absolute; left: 3%; right: 3%; bottom: 7%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--accent) 38%, var(--bg-2)), color-mix(in srgb, var(--accent) 18%, var(--bg-2)) 70%);
+  border: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 30px 80px -30px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.hero-portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 18px 24px rgba(8, 10, 21, .35)); }
+:root[data-theme='dark'] .hero-portrait img { filter: drop-shadow(0 0 1px rgba(255, 255, 255, .5)) drop-shadow(0 18px 28px rgba(0, 0, 0, .6)); }
+:root[data-theme='dark'] .portrait-disc { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+
+/* with a portrait, the code card floats beside it instead of in front of it, and only when there is room */
+@media (max-width: 1319px) { .hero--portrait .snippet { display: none; } }
+@media (min-width: 1320px) { .hero--portrait .snippet { right: min(19rem, 22vw); width: min(360px, 27vw); } }
+@media (max-width: 979px) { .hero--portrait .orb { opacity: .5; } }
+
+/* the photo was cropped at the shoulders: fade the sides so the jacket dissolves instead of ending in a hard edge */
+.hero-portrait img {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 16%, #000 84%, transparent 100%);
+}
+
+/* article card: summary and the three-step checklist */
+.article-card { padding-bottom: clamp(4.6rem, 8vw, 5.4rem); }
+.article-card .article-meta { margin-top: .9rem; font-family: var(--font-mono); font-size: .78rem; letter-spacing: .02em; opacity: .75; font-weight: 500; }
+.article-card .article-sum { margin-top: 1.1rem; font-size: 1.02rem; line-height: 1.6; font-weight: 500; opacity: .95; max-width: 60ch; }
+.article-points { list-style: none; counter-reset: pt; margin: 1.3rem 0 0; padding: 0; display: grid; gap: .75rem; max-width: 60ch; }
+.article-points li { counter-increment: pt; display: grid; grid-template-columns: 1.7rem 1fr; gap: .7rem; line-height: 1.5; font-size: .95rem; font-weight: 600; }
+.article-points li::before {
+  content: counter(pt); display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 50%;
+  background: var(--accent-ink); color: var(--accent); font-family: var(--font-mono); font-size: .75rem; font-weight: 700;
+}
+
+/* recommendation */
+.voice { padding: clamp(4rem, 9vw, 7rem) 0; }
+.voice-label { margin: 0 0 1.6rem; font-family: var(--font-mono); font-size: .8rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.voice-card { margin: 0; }
+.voice-card blockquote { margin: 0; }
+.voice-quote { max-width: 20ch; font-size: clamp(2.2rem, 6.2vw, 5.2rem); }
+.voice-card figcaption { display: flex; align-items: center; gap: .9rem; margin-top: 2rem; }
+.voice-avatar { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; }
+.voice-who { display: grid; font-weight: 700; }
+.voice-who small { font-weight: 500; color: var(--muted); font-size: .85rem; }

@@ -235,8 +235,22 @@ export const skillProjects = (skill: string) =>
 export const article = {
   title: 'AI Can Make Mistakes Too: Why You Must Verify AI-Generated Code',
   where: 'Published on Verdentra’s website',
+  date: 'November 2026',
   href: 'https://www.verdentra.com/article/verify-ai-generated-code/' as string,
+  /* written in my own words, from the article's actual argument */
+  summary:
+    'AI assistants write code fast, and fast is easy to mistake for correct. My argument is that generated code is a starting point, not a finished product, and whoever commits it owns what it does. Models invent APIs and packages, assume the wrong thing, lean on outdated patterns and miss edge cases, so the real danger is believable code that solves the wrong problem.',
+  points: [
+    'Understand it, then check it against the official docs and make sure every package really exists.',
+    'Run it and test the edges: bad input, errors and boundaries, not just the happy path.',
+    'Review it like any other change, say in the pull request when AI helped, and never merge what you can’t explain.',
+  ],
 };
+
+/* kind words from people I've worked with. Add a role or company to `role` when you have it. */
+export const recommendations: { name: string; text: string; role?: string }[] = [
+  { name: 'Saajidh', text: 'said I’m the best he’s worked with.' },
+];
 
 export const community = [
   { org: 'AIESEC IIT', role: 'Internal Campaigns Team Leader' },

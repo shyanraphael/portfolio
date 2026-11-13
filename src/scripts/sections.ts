@@ -406,11 +406,10 @@ function initScroll() {
   });
 
   /* about: the statement lights up word by word; counters run when they appear */
-  const st = $('[data-words]');
-  if (st) {
+  $$('[data-words]').forEach((st) => {
     const words = wordify(st);
     gsap.to(words, { opacity: 1, stagger: 0.1, ease: 'none', scrollTrigger: { trigger: st, start: 'top 82%', end: 'bottom 50%', scrub: true } });
-  }
+  });
   $$('[data-count]').forEach((el) => {
     const end = Number(el.dataset.count);
     const o = { v: 0 };

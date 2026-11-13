@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Icon from '../components/Icon.astro';
 import {
-  profile, roles, categories, skills, heroChips, marquee, tests, experience, projects, article, community, certifications, skillProjects,
+  profile, roles, categories, skills, heroChips, marquee, tests, experience, projects, article, recommendations, community, certifications, skillProjects,
 } from '../data';
 
 const sections = [
@@ -102,9 +102,15 @@ const paletteData = {
 
     <main>
       <!-- HERO -->
-      <section class="hero" id="top">
+      <section class:list={['hero', { 'hero--portrait': !!photo }]} id="top">
         <div class="dots" aria-hidden="true"></div>
         <canvas class="orb" id="orb" aria-hidden="true"></canvas>
+        {photo && (
+          <div class="hero-portrait" data-hero-in>
+            <div class="portrait-disc" aria-hidden="true"></div>
+            <img src={`/${photo}`} alt={profile.name} width="1000" height="1333" fetchpriority="high" />
+          </div>
+        )}
         <div class="wrap hero-copy">
           <h1 class="hero-name" aria-label={profile.name}>
             <span class="mask"><span class="l1">{profile.first}</span></span>
@@ -133,7 +139,6 @@ const paletteData = {
             <li><b><span data-hcount="30">30</span>+</b><small>QA tickets owned</small></li>
             <li><b><span data-hcount="5">5</span></b><small>projects in parallel</small></li>
           </ul>
-          {photo && <img class="hero-photo" src={`/${photo}`} alt={profile.name} width="240" height="240" data-hero-in />}
           <aside class="snippet" data-hero-in aria-hidden="true">
             <div class="snippet-bar">
               <span class="term-dots"><i></i><i></i><i></i></span>
@@ -271,6 +276,24 @@ const paletteData = {
         </div>
       </section>
 
+      <!-- RECOMMENDATION -->
+      <section id="voice" class="voice">
+        <div class="wrap">
+          <p class="voice-label" data-reveal>Recommendation</p>
+          {recommendations.map((r) => (
+            <figure class="voice-card">
+              <blockquote>
+                <p class="statement voice-quote" data-words><span class="n">{r.name}</span> {r.text}</p>
+              </blockquote>
+              <figcaption data-reveal>
+                <span class="voice-avatar" aria-hidden="true">{r.name[0]}</span>
+                <span class="voice-who">{r.name}{r.role && <small>{r.role}</small>}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
       <!-- PROJECTS -->
       <section id="work" class="work">
         <div class="wrap work-head">
@@ -307,7 +330,11 @@ const paletteData = {
             <h2 class="h2" data-split>Something I wrote</h2>
             <a class="article-card mt-10" href={article.href} target="_blank" rel="noopener noreferrer" data-reveal data-cursor="Read">
               <h3>{article.title}</h3>
-              <p>{article.where}</p>
+              <p class="article-meta">{article.where} · {article.date}</p>
+              <p class="article-sum">{article.summary}</p>
+              <ol class="article-points">
+                {article.points.map((p) => <li>{p}</li>)}
+              </ol>
               <span class="arrow"><Icon name="arrow-ur" /></span>
             </a>
           </div>

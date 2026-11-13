@@ -253,7 +253,7 @@ function initOrb(hero: HTMLElement, reduced: boolean) {
 function initCharReact(hero: HTMLElement, chars: Element[]) {
   const setters = chars.map((c) => ({
     y: gsap.quickTo(c, 'skewX', { duration: 0.5, ease: 'power3' }),
-    r: gsap.quickTo(c, 'rotate', { duration: 0.5, ease: 'power3' }),
+    r: gsap.quickTo(c, 'rotation', { duration: 0.5, ease: 'power3' }),
   }));
   const radius = 190;
   hero.addEventListener('mousemove', (e) => {
@@ -334,6 +334,15 @@ export function initHero(reduced: boolean) {
           const rx = gsap.quickTo(role, 'x', { duration: 0.7, ease: 'power3' });
           hero.addEventListener('mousemove', (e) => rx((e.clientX / innerWidth - 0.5) * 22));
           hero.addEventListener('mouseleave', () => rx(0));
+        }
+        /* the portrait and the disc behind it slide a little in opposite directions: depth */
+        const img = hero.querySelector('.hero-portrait img');
+        const disc = hero.querySelector('.portrait-disc');
+        if (img && disc) {
+          const ix = gsap.quickTo(img, 'x', { duration: 0.8, ease: 'power3' });
+          const dx = gsap.quickTo(disc, 'x', { duration: 0.8, ease: 'power3' });
+          hero.addEventListener('mousemove', (e) => { const k = e.clientX / innerWidth - 0.5; ix(k * -20); dx(k * 16); });
+          hero.addEventListener('mouseleave', () => { ix(0); dx(0); });
         }
       }
     }, '-=0.5');
