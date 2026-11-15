@@ -169,7 +169,10 @@ export const projects: {
     detail:
       'Log in with Spotify and your whole library syncs into one animated app: playlists, Liked Songs and every track. Search across songs, artists and albums, see which playlists a song is on, track what was added or removed between syncs, group playlists into your own folders and read lyrics. Light and dark themes switch with a circular reveal, and it installs on a phone as an app.',
     stack: ['React', 'TypeScript', 'Vite', 'Framer Motion', 'Spotify API'],
-    links: [{ label: 'Source code', href: 'https://github.com/shyanraphael/SpotTracker' }],
+    links: [
+      { label: 'Live site', href: 'https://spot-tracker-lyart.vercel.app/' },
+      { label: 'Source code', href: 'https://github.com/shyanraphael/SpotTracker' },
+    ],
     cover:
       '<svg viewBox="0 0 400 200" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="d" cx="92" cy="100" r="52"/><circle class="d" cx="92" cy="100" r="14"/><path class="d" d="M168 100V84M196 100V60M224 100V76M252 100V40M280 100V88M308 100V56M336 100V80M364 100V96"/><path class="d" d="M168 100V116M196 100V140M224 100V124M252 100V160M280 100V112M308 100V144M336 100V120M364 100V104"/></svg>',
   },
