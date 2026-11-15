@@ -42,7 +42,11 @@ function initPhysics(hero: HTMLElement) {
 
   /* grab and throw: mouse only, so touch scrolling still works */
   const mouse = Mouse.create(hero);
-  const m = mouse as unknown as { element: HTMLElement; mousewheel: EventListener };
+  const m = mouse as unknown as { element: HTMLElement; mousewheel: EventListener; mousemove: EventListener; mousedown: EventListener; mouseup: EventListener };
+  /* Matter also binds touch events and cancels them, which blocks page scroll on phones */
+  m.element.removeEventListener('touchmove', m.mousemove);
+  m.element.removeEventListener('touchstart', m.mousedown);
+  m.element.removeEventListener('touchend', m.mouseup);
   m.element.removeEventListener('mousewheel', m.mousewheel);
   m.element.removeEventListener('DOMMouseScroll', m.mousewheel);
   m.element.removeEventListener('wheel', m.mousewheel);
