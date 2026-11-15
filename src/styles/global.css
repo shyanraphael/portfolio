@@ -373,7 +373,8 @@ a:hover > .roll > span, button:hover > .roll > span, .roll:hover > span { transf
 /* expanded project sheet */
 .sheet-scrim { position: fixed; inset: 0; z-index: 140; background: rgba(8, 10, 21, .6); opacity: 0; pointer-events: none; }
 .sheet {
-  position: fixed; z-index: 150; background: var(--surface); color: var(--ink); border-radius: 1.6rem; overflow: auto; display: none; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .6);
+  position: fixed; z-index: 150; background: var(--surface); color: var(--ink); border-radius: 1.6rem; overflow-y: auto; overflow-x: hidden; display: none; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .6);
+  overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch;
 }
 .sheet.open { display: block; }
 .sheet-art { height: min(32vh, 260px); background: var(--bg); color: var(--accent); display: grid; place-items: center; border-bottom: 1.5px solid var(--line); }
