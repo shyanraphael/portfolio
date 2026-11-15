@@ -6,6 +6,10 @@
 </p>
 
 <p align="center">
+  <a href="https://portfolio-six-ashen-27.vercel.app/"><b>View the live site</b></a>
+</p>
+
+<p align="center">
   <img src="docs/screenshots/hero-dark.png" alt="Hero section in the dark theme with portrait, 3D orb, live code snippet and physics skill chips" width="900" />
 </p>
 
