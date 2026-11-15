@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://portfolio-six-ashen-27.vercel.app/"><b>View the live site</b></a>
+  <a href="https://shyan-wijesekera-portfolio.vercel.app/"><b>View the live site</b></a>
 </p>
 
 <p align="center">
